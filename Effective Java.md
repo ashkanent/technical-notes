@@ -98,3 +98,44 @@
 
 # Item 4
 - Enforce *non-instantiability* with a private constructor
+- sometimes we need a class that is a collection of static methods (like `java.util.Arrays`)
+- these classes shouldn't have a constructor (not to be instantiated). not writing any constructor will create the default constructor. the solution is a private constructor like this:
+```java
+public class UtilityClass {
+    private UtilityClass() {
+      throw new AssertionError();
+    }
+    ...
+}
+```
+- the only side effect is that this prevents the class from being subclassed, since the subclass would not have an accessible superclass constructor to invoke.
+
+# Item 5
+- Prefer dependency injection to hardwiring resources
+- not every class needs to be singleton or noninstantiable. sometimes classes behavior is parameterized by underlying resources. In these cases we need to pass the resource to the class
+- One common way of doing this is passing the resource through constructor when creating a new instance
+```java
+public class SpellChecker {
+    private final Lexicon dictionary;
+
+    public SpellChecker(Lexicon dictionary) {
+      this.dictionary = Objects.requireNonNull(dictionary);
+    }
+    ...
+}
+```
+- DI provides flexibility and testability
+- in big projects w/ lots of dependencies, handling this can be a bit problematic. In this case *dependency injection frameworks* can be used to eliminate the clutter
+  - such as Guice, Dagger or Spring
+
+# Item 6
+- Avoid creating unnecessary objects
+- this basically says don't create a new object when you can reuse an existing one!
+- One simple example:
+```java
+String s = new String("hello"); // don't do this!
+String s = "hello"; // this will reuse the string instead of creating a new one
+```
+
+# Item 7
+- Eliminate obsolete object references
