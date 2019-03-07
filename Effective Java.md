@@ -139,3 +139,37 @@ String s = "hello"; // this will reuse the string instead of creating a new one
 
 # Item 7
 - Eliminate obsolete object references
+- Java has garbage collection but in some situation we may leave an unnecessary reference to an object which prevents it from being garbage collected!
+- for example look at this stack implementation:
+```Java
+public class Stack {
+    private Object[] elements;
+    private int size = 0;
+    // ...
+
+    public void push(Object element) {
+        elements[size++] = element;
+    }
+
+    public Object pop() {
+        if (size == 0) {
+            throw new EmptyStackException();
+        }
+        return elements[--size];
+    }
+    // ...
+}
+```
+  - in this example, our stack cares about the first "`size`" elements of the stack although other elements are still referring to objects. Java has no idea about that those references are not needed. So it won't be garbage collected and we will have a memory leak here.
+  - in this case we can do this `elements[size] = null;` to eliminate the obsolete reference.
+  - another benefit of doing this is that if by mistake we dereference the object, it will throw an `NPE`
+
+
+# Item 8
+- Avoid finalizers and cleaners
+- as of Java 9, finalizers have been deprecated and replaced w/ cleaners
+- they are somehow like destructors in C++ and used to perform some cleanup before garbage collection happens for a particular object
+- they are both problematic, execution is not guaranteed, they can cause deadlocks
+- finalizers have even more issues, security issues (known as *finalizer attacks*) and they ignore exceptions!
+- what should we do instead?
+  - best approach is to make the class implement `AutoClosable` and require its clients to call `close()` or even better use them in `try-with-resource` blocks
