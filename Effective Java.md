@@ -173,3 +173,40 @@ public class Stack {
 - finalizers have even more issues, security issues (known as *finalizer attacks*) and they ignore exceptions!
 - what should we do instead?
   - best approach is to make the class implement `AutoClosable` and require its clients to call `close()` or even better use them in `try-with-resource` blocks
+
+# Item 9
+- Prefer `try-with-resources` to `try-finally`
+- there are many java resources that must be closed manually
+  - `InputStream`, `BufferedReader`, `java.sql.Connection`, etc.
+- in these situations consider using `try-with-resources` because:
+  - it is more concise and readable (specially if there are more than one resources)
+  - in `try-finally` if the code in `try` throws an exception and then the code in `finally` throws another exception, there is no record of the first exception in the exception stack trace
+- to be usable w/ this construct, a resource must implement `AutoClosable`
+  - many classes and interfaces in Java libraries implement or extend `AutoClosable`
+  - if you write a class that represents a resource that needs to be closed, make sure you implement `AutoClosable` too.
+  ```Java
+  static void copy(String src, String dst) throws IOException {
+      try (InputStream in = new FileInputStream(src);
+           OutputStream out = new FileOutputStream(dst)) {
+               byte[] buffer = new byte[BUFFER_SIZE];
+               int n;
+               while ((n = in.read(buffer)) >= 0)
+                   out.write(buffer, 0, n);
+           }
+  }
+  ```
+
+# Item 10
+- Obey the general contract when overriding equals
+- first make sure that you need to do that! in these cases you don't need to override it:
+  - each instance of the class is inherently unique (like `Thread`)
+  - there is no need for the class to provide a "logical equality" test
+    - like `java.util.regex.Pattern`
+  - a superclass has already overriden `equals`
+    - e.g. most `Set` implementations inherit their `equals` from `AbstractSet`
+- if you override, you must adhere to its general contract:
+  1. *Reflexive*: x.equals(x) must return true
+  2. *Symmetric*: x.equals(y) is true if and only if y.equals(x) is true
+  3. *Transitive*: x.equals(y) and y.equals(z) then x.equals(z) must be true as well
+  4. *Consistent*: x.equals(y) must consistently return true or false
+  5. for non-null reference value x, x.equals(null) must return false
