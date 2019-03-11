@@ -210,3 +210,11 @@ public class Stack {
   3. *Transitive*: x.equals(y) and y.equals(z) then x.equals(z) must be true as well
   4. *Consistent*: x.equals(y) must consistently return true or false
   5. for non-null reference value x, x.equals(null) must return false
+- usually it will be easy to follow this contract but if this doesn't happen we may break so many functionalities with _Collections_ and other things.
+- There is no way to extend an instantiable class and add a value component while preserving the equals contract
+  - one solution can be using composition instead of inheritance, or:
+  - having an abstract class and overriding its sub-classes
+- When you have to override `equals` consider the following:
+  1. for performance optimization use `==` to check if the argument is a reference to this object (if so, return `true`)
+  2. use `instanceof` to check if the argument has the correct type (if not, return `false`)
+  3. cast the argument to the correct type
