@@ -218,3 +218,61 @@ public class Stack {
   1. for performance optimization use `==` to check if the argument is a reference to this object (if so, return `true`)
   2. use `instanceof` to check if the argument has the correct type (if not, return `false`)
   3. cast the argument to the correct type
+
+# Item 11
+- You must override `hashCode` when you override `equals`
+- general contract for `hashCode`:
+  1. invoking multiple times should always return same hash value
+  2. if two objects are equal (according to `equals`) then calling `hashCode` on them should return same integer value
+  3. it is not required to return different hash values for different objects, but doing so will help with performance
+- if you don't override `hashCode` when you override `equals`, you can break item 2 above
+- to override the hashCode, you have to calculate the value starting from the first significant field, you add the calculated value of each field and result would be the hash value for that object
+- define an integer called `result` and for each field, based on its type calculate the value like this:
+  - if field is a primitive type, use `Type.hashCode(field)`
+  - if field is an object, use `hashCode()` on that function. (if it is null, use 0)
+  - for arrays, if all fields are significant, use `Arrays.hashCode`, else calculate the value for each item in the array based on its type (one of the previous 2 steps)
+- add the calculated hash code `c` for each field into `result`:
+  - `result = 31 * result + c;`
+- based on above explanations, for `PhoneNumber` class (has areaCode, prefix and lineNum) you can do this:
+```Java
+@override
+public int hashCode() {
+    int result = Short.hashCode(areaCode);
+    result = 31 * result + Short.hashCode(prefix);
+    result = 31 * result + Short.hashCode(lineNum);
+    return result;
+}
+```
+- if performance is not a concern we can use `Objects.hash()` (previous example is still better):
+```Java
+@override
+public int hashCode() {
+    return Objects.hash(lineNum, prefix, areaCode);
+}
+```
+#### Notes
+- the number `31` above: it is an odd prime, if it was even and multiplication overflowed, information would be lost. advantage of using a prime is less clear but it's traditional. also for the sake of optimization: `31 * i == (i << 5) - i`
+- write tests for your hashCode, for example make sure multiple calls on the same object returns same value. if you use AutoValue you don't need testing it.
+
+# Item 12
+- always override `toString`
+- not as critical as last two items, but very useful and important
+  - used by default when printing the object, logging, debugging, asserting, ...
+- by default all objects will return `objectName` + `@` + `hashValue` (e.g. `PhoneNumber@158b39`)
+- general contract for `toString` is: a concise but informative representation that is easy to read
+  - e.g. for `PhoneNumber` we can return `416-421-7373`
+- when practical, `toString` should return all of the interesting information, otherwise a meaningful summary
+- always try to specify the format in a comment when overriding `toString`. if it is subject to change, specify that (like you add more fields in future or just change the format):
+
+```Java
+/**
+* Returns the String representation of this phone number.
+* The string contains 12 characters whose format is ....
+*/
+@override
+public String toString() {
+    return String.format("%03d-%03d-%04d", areaCode, prefix, lineNum);
+}
+```
+#### Notes
+- if you show something in `toString`, provide programmatic access to it so user doesn't have to parse the string
