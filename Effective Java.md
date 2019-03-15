@@ -276,3 +276,107 @@ public String toString() {
 ```
 #### Notes
 - if you show something in `toString`, provide programmatic access to it so user doesn't have to parse the string
+
+# Item 13
+- Override `clone` judiciously
+- if a class implements `Cloneable`, Object's clone method returns a field-by-field copy of the object ow it throws `CloneNotSupportedExeption`
+  - highly atypical use of interface! instead of defining behavior for class, changes behavior of a protected method on a superclass
+- a class implementing `Cloneable` is expected to provide a proper `Clone` method
+- always call `super.clone();` first. If your class only contains primitive values or reference to immutable objects, that's all you need:
+```Java
+@Override
+public PhoneNumber clone() {
+    try {
+        return (PhoneNumber) super.clone();
+    } catch (CloneNotSupportedExeption e) {
+        throw new AssertionError(); // Can't happen
+    }
+}
+```
+- but if class has other types, you have to fix them in Clone method after calling `super.clone()`. For example in `Stack` example that we have an array of object (`Object[] elements;`), calling `super.clone()` returns a replica in which the `elements` refers to the same array as the original, in this case we can do this:
+```Java
+@Override
+public Stack clone() {
+    try {
+        Stack result = (Stack) super.clone();
+        result.elements = elements.clone();
+        return result;
+    } catch (CloneNotSupportedExeption e) {
+        throw new AssertionError();
+    }
+}
+```
+- For more complicated objects it will get harder to create a proper copy:
+```java
+public class HashTable implements Cloneable {
+    private Entry[] buckets = ...;
+
+    private static class Entry {
+        final Object key;
+        Object value;
+        Entry next;
+
+        Entry(Object key, Object value, Entry next) {
+            this.key = key;
+            ...
+        }
+
+        Entry deepCopy() {
+            return new Entry(key, value, next == null ? null : next.deepCopy());
+        }
+    }
+
+    @Override
+    public HashTable clone() {
+        try {
+            HashTable result = (HashTable) super.clone();
+            result.buckets = new Entry[buckets.length];
+            for (int i=0; i < buckets.length; i++) {
+                if (buckets[i] != null) {
+                    result.buckets[i] = buckets[i].deepCopy();
+                }
+                return result;
+            }
+        } catch(...) {...}
+    }
+}
+```
+- a better approach to object copying is to provide a copy constructor or copy factory
+```Java
+public Yum(Yum yum) {...}  // copy constructor
+public static Yum newInstance(Yum yum) {...} // copy factory
+```
+
+# Item 14
+- Consider implementing `Comparable`
+  - when you implement a value class that has a sensible ordering
+- by implementing it, a class indicates that its instances have a natural ordering
+- by implementing Comparable, you allow your class to interoperate with all of the many generic algorithms and collection implementations that depend on it
+- the general contract for `compareTo` is similar to that of `equals`
+  - `sgn(x.compareTo(y))` == `-sgn(y.compareTo(x))`
+    - if one throws exception the other one throws exception as well
+  - `x.compareTo(y) > 0` and `y.compareTo(z) > 0` ==> `x.compareTo(z) > 0`
+  - `x.compareTo(y) == 0` ==> `sgn(x.compareTo(z))` == `sgn(y.compareTo(z))` for all z
+- if a class has multiple significant fields, start from the most to the least significant:
+```Java
+public int compareTo(PhoneNumber phoneNumber) {
+    int result = Short.compare(areaCode, phoneNumber.areaCode);
+    if (result == 0) {
+        result = Short.compare(prefix, phoneNumber.prefix);
+        if (result == 0) {
+            result = Short.compare(lineNum, phoneNumber.lineNum);
+        }
+    }
+    return result;
+}
+```
+- Comparator based on static compare method:
+```Java
+static Comparator<Object> hashCodeOrder = new Comparator<>(){
+    public int compare(Object o1, Object o2) {
+        return Integer.compare(o1.hashCode, o2.hashCodeOrder);
+    }
+};
+```
+**Notes**
+- in implementations of `compareTo` never use `<` or `>` and always use static compare methods
