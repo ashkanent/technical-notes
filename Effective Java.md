@@ -380,3 +380,53 @@ static Comparator<Object> hashCodeOrder = new Comparator<>(){
 ```
 **Notes**
 - in implementations of `compareTo` never use `<` or `>` and always use static compare methods
+
+# Item 15
+- Minimize the accessibility of classes and members
+- make each class or member as inaccessible as possible
+- ***Information Hiding*** or ***Encapsulation***:
+  - components communicate only through their APIs and are oblivious to each other's inner workings
+- Four possible access levels (most restrictive to least restrictive):
+  1. _private_: only accessible in the class it is defined
+  2. _package-private_: also known as default access, member is accessible from any class in the package
+  3. _protected_: accessible from subclasses of the class where it is defined + any class in the package
+  4. _public_: accessible from anywhere
+- by default everything should be declared as private, sometimes it is fine to make them package-private (like for testing) but moving to protected is a major change as they will become part of class's public API and must be supported forever!
+- it is wrong to have a public static final array field (or an accessor that returns such field):
+```Java
+// potential security hole:
+public static final Thing[] VALUES = {...};
+//
+// one alternative can be:
+private static final Thing[] PRIVATE_VALUES = {...};
+public static final List<Thing> VALUES =
+    Collections.unmodifiableList(Arrays.asList(PRIVATE_VALUES));
+```
+
+**Notes**:
+- default access is always package-private except interfaces where it is public
+- classes w/ public mutable fields are not generally thread-safe
+
+# Item 16
+- In public classes, use accessor methods not public fields
+```java
+// Encapsulation of data using getters/setters (accessor/mutators):
+class Point {
+    private double x;
+    private double y;
+
+    public Point(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public double getX() { return x; }
+    public double getY() { return y; }
+
+    public void setX(double x) { this.x = x; }
+    public void setY(double y) { this.y = y; }
+}
+```
+
+# Item 17
+- Minimize mutability
