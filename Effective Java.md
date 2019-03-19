@@ -430,3 +430,50 @@ class Point {
 
 # Item 17
 - Minimize mutability
+- immutable class is one that its instances can not be modified
+- all classes should be declared immutable unless there is a good reason to make them mutable
+  - in this case we should limit its mutability as much as possible
+- follow these rules to make your classes immutable:
+  1. don't provide methods that modify the object (mutators)
+  2. ensure that class can not be extended
+  3. make all fields final
+  4. make all fields private
+  5. ensure exclusive access to any mutable components
+    - e.g. if your class has a field referring to a mutable component, make sure it is private and when returning that through a getter, we can make a defensive copy
+- some of the advantages of immutable classes:
+  - They are very simple
+    - they have exactly one state, the one that was assigned at creation time
+  - inherently thread-safe, require no synchronization
+  - can be shared freely
+    - these classes should encourage clients to reuse existing instances whenever possible
+    - they can even share their internals (like `BigInteger` that has `sign` and `magnitude`, negative value share the same `magnitude` and have different `sign`s)
+  - they make great building blocks for other objects
+    - specially as map keys or set elements
+  - They provide failure atomicity for free
+    - their state never change and there won't be any temporary inconsistencies or random failures!
+  - you can use _lazy initialization_ on some of its fields
+    - e.g. hash value of an immutable object never changes, so if its hash value is requested we calculate it once and if its requested again, we just return that same value moving forward (better performance)
+- the major disadvantage is that they require a separate object for each distinct value
+  - if you have a million bit BigInteger and want to change its low-order bit
+  - there are different ways to cope with these issues, for example BigInteger has a companion package-private class that it uses to enhance its performance and memory usage while client can't see and use that mutable class.
+- simple example of an immutable class:
+```Java
+public final class Complex {
+    private final double re;
+    private final double im;
+
+    public Complex(double re, double im) {
+        this.re = re;
+        this.im = im;
+    }
+
+    public double realPart() { return re; }
+    public double imaginaryPart() { return im; }
+
+    public Complex plus(Complex c) {
+        return new Complex(re + c.realPart(), im + c.imaginaryPart());
+    }
+
+    ...
+}
+```
