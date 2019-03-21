@@ -477,3 +477,21 @@ public final class Complex {
     ...
 }
 ```
+
+# Item 18
+- Favor composition over inheritance
+- unlike method invocation, inheritance violates encapsulation
+  - subclass depends on the implementation details of its super class
+- it is safe to
+  - use inheritance when it is within the same package (controlled by same programmer)
+  - use inheritance when extending classes that are designed and documented for extension (_item 19_)
+- in other cases, many things can go wrong that breaks your code, such as:
+  - you wanna implement an instrumented HashSet that counts how many items have been added (not the size, including those removed). HashSet has `add()` and `addAll()` for which you can override and simply add number of elements to a counter each time any of these are called. Little you know that `addAll()` calls the `add()` behind the scene so if you add 2 elements to your set, counter will show 4!
+  - sometimes they don't have these dependencies but in future updates the superclass may make these changes which still gives same input/output (valid updates) but it may break subclasses if they depend on these implementation details
+  - let's say you have a collection with a few insert methods that you override them all to make them secure inserts and your clients use them. In future if that collection adds a new insert method your users can potentially use that new insert method and work around your security checks!
+- These issues won't happen if both classes are controlled by one person (team) or when they are designed to be inherited. This won't also happen when the superclass provides implementation details so you can be careful when inheriting it.
+- The best way to get around these issues and yet use the abilities of the superclass is to use **composition**. So instead of extending that class, you create a private instance of that class in your class and our methods can call the methods on this instance. (known as ***forwarding***)
+
+**Notes**:
+- Inheritance is appropriate only where the subclass is really a subtype of the superclass
+  - when class B extends A, ask yourself is B really an A?
