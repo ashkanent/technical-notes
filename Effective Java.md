@@ -495,3 +495,16 @@ public final class Complex {
 **Notes**:
 - Inheritance is appropriate only where the subclass is really a subtype of the superclass
   - when class B extends A, ask yourself is B really an A?
+
+# Item 19
+- Design and document for inheritance or else prohibit it
+- the class must document its self-use of overridable methods
+- use the java doc to include these details. Since Java 8 there are new tags including `@implSpec` that should be used of *Implementation Requirements*. The person overriding these methods should review these documents to make sure he is not breaking things.
+- The only way to test a class designed for inheritance is to write subclasses
+- Constructors must not invoke overridable methods.
+  - this can lead to serious bugs, avoid it!
+- designing class for inheritance is hard work! you have to document all of its self-use patterns and then commit to them for the life of the class. If you change them in future, you may break other ppl code!
+
+# Item 20
+- Prefer interfaces to abstract classes.
+- 
