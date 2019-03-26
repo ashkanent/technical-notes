@@ -507,4 +507,108 @@ public final class Complex {
 
 # Item 20
 - Prefer interfaces to abstract classes.
-- 
+- as mentioned earlier inheritance has its own issues and when not necessary we better avoid them! In contrast interfaces don't have those issues and enable safe and powerful functionality enhancement
+- A class can have one super class but can implement many interfaces
+- default methods were introduced in Java 8 which let us change existing interfaces (still need to be careful). We add the new method with a default implementation, if it is not defined in the class implementing that interface, the default implementation will be used when needed.
+- We can also combine an interface with an abstract class implementing that interface to maximize the benefits. These abstract classes are known as ***Skeletal Implementation***:
+  - the way it works, you have your interface, you create an abstract class that implements that interface and provides implementation for the interface methods
+  - now user can extend the skeletal implementation (their naming convention is Abstract*InterfaceName*) and for example only override one method and then use the default implementations in AbstractInterface for all other methods
+  - if for example in another use case we need to override all the interface methods, user has the flexibility to just implement the interface directly (not using AbstractInterface) and override all methods
+  - an example of this:
+
+  ```Java
+  /**
+   * The Interface
+   *
+   */
+  interface RedisConnection
+  {
+      int connect();
+      boolean isConnected();
+      int disconnect();
+      int getDatabaseNumber();
+  }
+
+  /**
+   * Abstract class which implements the interface.
+   * This is called Abstract Interface known as Skeletal Implementation
+   *
+   */
+  abstract class AbstractRedisConnection implements RedisConnection
+  {
+      @Override
+      public final int connect()
+      {
+          //... lots of code to connect to Redis
+      }
+
+      @Override
+      public final boolean isConnected()
+      {
+          //... code to check Redis connection
+      }
+
+      @Override
+      public final int disconnect()
+      {
+          //... lots of code to disconnect from Redis and perform cleanup
+      }
+   }
+
+  /**
+   * A subclass which extends from the Abstract Interface
+   *
+   */
+  class RedisOptOut extends AbstractRedisConnection {…}
+  ```
+  - here if we don't need to redefine those interface methods we just extend the `AbstractRedisConnection` and will have those default implementations.
+
+
+  # Item 21
+  - Design interfaces for posterity
+  - this item mostly talks about the default implementation of interface methods added in Java 8 (mainly to facilitate the use of lambdas)
+  - although it is a powerful and helpful feature but we should be very careful and try not to change interfaces if possible
+  - Java library has some changes to interfaces with new default methods that in some scenarios will break (like `removeIf` in `synchronizedCollection`)
+
+
+  # Item 22
+  - Use interfaces only to define types
+  - When a class implements an interface that should serve as a *type* that can be used to refer to instances of the class
+  - there are some cases that interfaces are used to hold constants which is wrong and should be avoided:
+  ```Java
+  // bad use of interface:
+  public interface PhysicalConstants {
+      static final double AVOGADROS_NUMBER = 6.022_140_857e23;
+      static final double BOLTZMANN_CONTANT = 1.380_648_52e-23;
+      ...
+  }
+  ```
+  - this constant patter is a poor use of interface. Alternatives are:
+    1. make these constants part of the class that needs them (as a member)
+    2. use an Enum
+    3. have a utility class to keep them:
+
+    ```Java
+    package com.ashkan.science;
+
+    public class PhysicalConstants {
+        static final double AVOGADROS_NUMBER = 6.022_140_857e23;
+        static final double BOLTZMANN_CONTANT = 1.380_648_52e-23;
+    }
+    ```
+  then we can use these constants like `PhysicalConstants.AVOGADROS_NUMBER`. also if one class is heavily using these constants, in order to make it shorter and easier to use, we can use *static import*:
+  ```Java
+  import static com.ashkan.science.PhysicalConstants.*;
+
+  public class Test {
+      double atoms(double mols) {
+          return AVOGADROS_NUMBER * mols;
+      }
+  }
+  ```
+
+**Note**:
+- the underscore in numbers above (since Java 7) is used for readability and doesn't change the value of the numbers or break them.
+
+# Item 23
+- Prefer class hierarchies to tagged classes.
