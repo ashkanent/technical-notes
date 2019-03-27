@@ -612,3 +612,42 @@ public final class Complex {
 
 # Item 23
 - Prefer class hierarchies to tagged classes.
+- tagged classes have a *tag* field that based on its value the class instance gets a different flavor. e.g.
+```Java
+class Figure {
+    enum Shape { RECTANGLE, CIRCLE };
+
+    final Shape shape; // tag field
+
+    // these fields used only if it's RECTANGLE:
+    double length;
+    double width;
+
+    // this field used only if shape is CIRCLE:
+    double radius;
+
+    /*
+    rest is omitted for brevity: basically different constructors based on Shape and area() method with a switch(shape) statement that behaves differently based on shape, so on and so forth
+    */
+}
+```
+- these classes are verbose, error-prone and inefficient (specially memory wise). They violate SRP and they are basically pallid imitation of class hierarchy
+- avoid these type of classes and replaces them with proper hierarchies.
+
+# Item 24
+- Favor static member classes over non-static
+- a nested class should exist to serve its enclosing class.
+- if a nested class will be useful in some other context, then it should be a top-level class
+- there are four kinds of nested classes:
+  1. *static member classes*
+    - one common use case is a helper class that can be used in conjunction w/ its outer class. Like `Calculator` class can have `Operation` class inside and we can refer to its operations like `Calculator.Operation.PLUS`.
+    - if you declare a class that does not need access to its enclosing instance, make it static.
+  2. *non-static member classes*
+    - these classes are associated w/ their enclosing class and need to be instantiated. One common use of these non-static member classes is to define an ***Adapter***: this lets an instance of the enclosing class to be viewed as an instance of some other class (like viewing `Map`'s values or keys as a *collection view*)
+  3. *anonymous classes*
+    - they can be used anywhere that expressions are allowed
+    - they have limitations, such as can not be instantiated or we can't use `instanceof` on them
+    - before lambdas, they were more useful for creating small function objects and process objects but now wherever possible, we should use lambdas
+  4. *local classes*
+    - they are the least frequently used
+- these four types should be considered 1 to 4, most to least preferable!
