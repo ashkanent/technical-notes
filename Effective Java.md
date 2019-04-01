@@ -651,3 +651,36 @@ class Figure {
   4. *local classes*
     - they are the least frequently used
 - these four types should be considered 1 to 4, most to least preferable!
+
+# Item 25
+- Limit source files to a single top-level class
+- Java let us define multiple top-level classes or interfaces in a single file. This item basically says never do this, it is confusing, messy and can result in errors depending on how you execute your program:
+
+```Java
+// Animal.java —don't do this
+public class Dog {
+    ...
+}
+
+public class Cat {
+    ...
+}
+```
+
+# Item 26
+- Don't use raw types
+- a class/interface whose declaration has _type parameters_ is a generic class/interface
+  - `List<E>` --> list of E (elements of type E)
+  - `List<String>` --> list of String (elements of type String)
+  - `List` --> raw type: list can contain anything (old Java)
+- main issue of raw types is we may get run-time exceptions. With generic types we will get compile-time exception if we attempt to put an incompatible type into our collection.
+  ```Java
+  // Raw collection type - don't do this:
+  private final Collection stamps = ...;
+  ```
+  - here we can add something other than `Stamp` to this collection but later on if do something like `Stamp stamp = (Stamp) stamps.get(0);` and its first element is not `Stamp` it will throw `ClassCastException`
+  - also we have to cast everything that we retrieve from this raw type collection. The correct way of declaring that collection is:
+  ```Java
+  private final Collection<Stamp> stamps = ...;
+  ```
+- Wildcard types are type arguments in the form `<?>` which can have lower bound and upper bound. They are unknown types and give us some flexibility when working with types that we don't know and at the same time type safety so if we have `List<?> myList` then the only thing that can be added to this list is `null` (which is member of every type).
