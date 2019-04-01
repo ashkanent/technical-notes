@@ -684,3 +684,47 @@ public class Cat {
   private final Collection<Stamp> stamps = ...;
   ```
 - Wildcard types are type arguments in the form `<?>` which can have lower bound and upper bound. They are unknown types and give us some flexibility when working with types that we don't know and at the same time type safety so if we have `List<?> myList` then the only thing that can be added to this list is `null` (which is member of every type).
+
+# Item 27
+- Eliminate unchecked warnings
+- When working w/ generics you see many unchecked warnings. Eliminate every unchecked warning that you can and suppress the rest.
+- When you can't eliminate the warning but you can prove that the code generating it is type safe, suppress it with `@SupressWarnings("unchecked")`
+  - use it on smallest scope possible
+  - don't use it on entire class or a method declaration
+- every time you use this tag, explain in a comment why it is safe to do so
+```Java
+// Adding local variable to reduce scope of @SuppressWarnings
+public <T> T[] toArray(T[] a) {
+    if (a.length < size) {
+        // This cast is correct because the array we're creating
+        // is of the same type as the one passed in, which is T[].
+        @SuppressWarnings("unchecked") T[] result =
+            (T[]) Arrays.copyOf(elements, size, a.getClass());
+        return result;
+    }
+    System.arraycopy(elements, 0, a, 0, size);
+    if (a.length > size)
+        a[size] = null;
+    return a;
+}
+```
+
+# Item 28
+- Prefer lists to arrays
+- arrays are *covariant*, generics are *invariant*
+  - ***Covariant***: if *Sub* is a subtype of *Super*, then the array type `Sub[]` is a subtype of `Super[]`
+  - ***invariant***: for any two distinct types `Type1` and `Type2`, `List<Type1>` is neither subtype nor a supertype of `List<Type2>`
+- arrays are deficient:
+```Java
+// fails at runtime
+Object[] objectArray = new Long[1];
+objectArray[0] = "I don't fit in!"; // throws ArrayStoreException
+```
+but this will give you compile time error:
+```Java
+// won't compile
+List<Object> objectList = new ArrayList<Long>(); // incompatible types
+```
+- arrays and generics do not mix well, these expressions are illegal:
+  - `List<E>[]`, `new List<String>[]` or `new E[]`
+  - the reason is they are not type safe
