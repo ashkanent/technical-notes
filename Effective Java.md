@@ -728,3 +728,18 @@ List<Object> objectList = new ArrayList<Long>(); // incompatible types
 - arrays and generics do not mix well, these expressions are illegal:
   - `List<E>[]`, `new List<String>[]` or `new E[]`
   - the reason is they are not type safe
+- when using arrays with generics, we may get compile errors or unchecked cast warnings. when this happens the best solution often is to use `List<E>` (replace arrays with lists)
+
+# Item 29
+- Favor generic types
+- generic types are safer and easier to use than the types that require casts in client code
+- we should design our code and types to be generic for this reason
+  - as an example, this item changes the `Stack` implementation of *Item 7* to use generics instead of `Object`
+  - when we do this we will get one error in the constructor (`elements = new E[...];`)
+  - it resolves it by changing it to `elements = (E[]) new Object[...];`
+  - after this we will get a warning but we can justify that `elements` is internal and will be safe to do so, then based on *Item 26* we suppress the warning.
+  - *takeaway*: if we can avoid using lists (*item 28*) it will be more efficient to use arrays! otherwise as *item 28* suggests, use lists.
+- ***Bounded type***: when working w/ generics, we can define a type like `<E extends Delayed>` which means that we have a generic type that is a subtype of `java.util.concurrent.Delayed`. The advantage is that we can use methods of `Delayed` on elements of our generified class (which are of type `E`).
+
+# Item 30
+- Favor generic methods
