@@ -743,3 +743,31 @@ List<Object> objectList = new ArrayList<Long>(); // incompatible types
 
 # Item 30
 - Favor generic methods
+- same as classes, methods can be generic and we need to use them specially when we have a method whose use requires casting!
+- to make a method generic, you need to put the type parameter between method's modifier and its return type:
+```Java
+public static <E> Set<E> union(Set<E> s1, Set<E> s2) {
+    ...
+}
+```
+- generic methods can be used in *generic singleton factory* pattern:
+
+    ```Java
+    private static UnaryOperator<Object> IDENTITY_FN = (t) -> t;
+
+    @SupressWarnings("unchecked")
+    public static <T> UnaryOperator<T> identityFunction() {
+        return (UnaryOperator<T>) IDENTITY_FN;
+    }
+
+    // now we can use it on any type:
+    Number[] numbers = {1, 2.0, 3L};
+    UnaryOperator<Number> sameNumber = identityFunction();
+    for (Number number : numbers) {
+        System.out.println(sameNumber.apply(number));
+    }
+    // or (my example which "I think" should be correct and makes more sense to me):
+    BigDecimal b = new BigDecimal("1234.1241234");
+    UnaryOperator<BigDecimal> sameDecimal = identityFunction();
+    BigDecimal b1 = sameDecimal.apply(b);
+    ```
