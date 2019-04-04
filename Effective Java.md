@@ -771,3 +771,52 @@ public static <E> Set<E> union(Set<E> s1, Set<E> s2) {
     UnaryOperator<BigDecimal> sameDecimal = identityFunction();
     BigDecimal b1 = sameDecimal.apply(b);
     ```
+
+# Item 31
+- Use bounded wildcards to increase API flexibility
+- parameterized types are *invariant* (two distinct types `Type1`, `Type2` -> `List<Type1>` is not sub/super type of `List<Type2>`)  
+  - look at this Stack implementation (here only included the public API):
+  ```Java
+  public class Stack<E> {
+      public Stack();
+      public void push(E element);
+      public E pop();
+  }
+  ```
+  we now add the `pushAll()` method to this class:
+  ```Java
+  public void pushAll(Iterable<E> src) {
+      for (E element : src) {
+          push(element);
+      }
+  }
+  ```
+  - since parameterized types are *invariant*, this won't work:
+  ```Java
+  Stack<Number> numberStack = new Stack<>();
+  Iterable<Integer> integers = ...;
+  numberStack.pushAll(integers);
+  ```
+  - although `Integer` is a subtype of `Number` but list of it is not! to fix it we need to change `pushAll` to this:
+  ```Java
+  public void pushAll(Iterable<? extends E> src) {...}
+  ```
+  - for the exact same reason, `popAll()` should be implemented like this:
+  ```Java
+  public void popAll(Iterable<? super E> dst) {
+      while (!isEmpty()) {
+          dst.add(pop());
+      }
+  }
+  ```
+- `<?>` is a wildcard type and when used with extends/super is called a *bounded wildcard type*
+  - `<? extends E>`: any subtype of E
+  - `<? super E>`: any supertype of E
+- for maximum flexibility of our API, we should use bounded wildcard types on input parameters that represent producers or consumers
+  - **PECS** stands for producer-extends, consumer-super
+  - so `pushAll()` is producing (for internal stack) so it extends
+  - and `popAll()` is consuming (from internal stack) so it uses super
+
+***Notes***
+- do not use bounded wildcard types as return types
+- all comparables and comparators are consumers
