@@ -820,3 +820,22 @@ public static <E> Set<E> union(Set<E> s1, Set<E> s2) {
 ***Notes***
 - do not use bounded wildcard types as return types
 - all comparables and comparators are consumers
+
+# Item 32
+- Combine generics and varargs judiciously
+- *varargs* (variable legnth arguments) was introduced in Java 5 (same as generics) but they don't work well with each other!
+  - we can have a method like `public void func(int... input) {...}` and then call it like `func(2);` or `func(1, 4, 3);` etc.
+  - when we invoke varargs, an array is created to hold the parameters.
+  - as mentioned in *Item 28*, arrays and generics do not mix well!
+- whenever we use varargs on a method with parameterized type, we will get a warning (possible heap pollution warning). To fix this we have to do one of the following:
+  1. make sure it is type safe and then use `@SafeVarargs`, or:
+  2. replace varargs with a list (sth like *item 28* to use list instead of arrays)
+- varargs methods are *safe* if:
+  1. it doesn't store anything in the varargs parameter array, and
+    - i.e. we don't assign anything to the passed in parameter that is a vararg
+  2. it doesn't make the array (or a clone) visible to the untrusted code
+    - for example getting the varargs parameter and returning it, so another code can get it, use it and break it  
+    
+**Note**
+- `@SafeVarargs` is legal only on methods that can not be overriden (o.w. those methods may break its safety!)
+- use `@SafeVarargs` on every method with a varargs parameter of a *generic* or *parameterized* type (so users won't be burdened with warnings)
