@@ -835,7 +835,38 @@ public static <E> Set<E> union(Set<E> s1, Set<E> s2) {
     - i.e. we don't assign anything to the passed in parameter that is a vararg
   2. it doesn't make the array (or a clone) visible to the untrusted code
     - for example getting the varargs parameter and returning it, so another code can get it, use it and break it  
-    
+
 **Note**
 - `@SafeVarargs` is legal only on methods that can not be overriden (o.w. those methods may break its safety!)
 - use `@SafeVarargs` on every method with a varargs parameter of a *generic* or *parameterized* type (so users won't be burdened with warnings)
+
+# Item 33
+- Consider typesafe heterogeneous containers
+- Common uses of generic collections are like `Set<E>` and `Map<K, V>` which is a parametrized container that contains elements of one type.
+- Usually this is what we want but sometimes we may need a typesafe container that can store and return elements of different types.
+  - we parametrize the key instead of the container!
+- before we take a look at one example, consider the following:
+  - the type of a class literal is `Class<T>`:
+    - type of `String.class` is `Class<String>`
+  - when a class literal is passed around for type information it is called a **type token**
+- here is a typesafe heterogeneous container:
+```Java
+public class Favorites {
+    private Map<Class<?>, Object> favorites = new HashMap<>();
+
+    public <T> void putFavorite(Class<T> type, T instance) {
+        favorites.put(Objects.requireNonNull(type), instance));
+    }
+
+    public <T> T getFavorite(Class<T> type) {
+        return type.cast(favorites.get(type));
+    }
+}
+```
+- a sample program to use the above container:
+```Java
+Favorites favorites = new Favorites();
+favorites.putFavorite(String.class, "Java");
+favorites.putFavorite(Integer.class, 0xcafe);
+int favInt = favorites.getFavorite(Integer.class);
+```
