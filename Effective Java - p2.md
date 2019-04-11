@@ -76,3 +76,37 @@ public enum Operation {
     }
 }
 ```
+
+# Item 35
+- Use instance fields instead of ordinals
+- enums have an ordinal method that returns an int for each member (in order they are defined, 0-index)
+- we might get tempted in some situations to get the `ordinal()` value and use it. Don't do this!!
+- if you need to associate a value with each member, even an int, use instance fields as explained in *item 34*.
+
+# Item 36
+- Use EnumSet instead of bit fields
+- when the enum elements are meant to be used in a set, traditionally many ppl use int enum pattern and instead of enum, for each element they define a different power of 2 and to pass them around they use *bit field*:
+```Java
+public class Text {
+    public static final int STYLE_BOLD = 1 << 0; // 1
+    public static final int STYLE_ITALIC = 1 << 0; // 2
+    public static final int STYLE_UNDERLINE = 1 << 0; // 4
+    // ...
+
+    public void applyStyles(int styles) {...}
+}
+```
+and to use them and passing them around, instead of set we can do this: `text.applyStyles(STYLE_BOLD | STYLE_ITALIC);` (we pass something like `100101` in which every `1` says we should apply that style)
+- Java.util package has `EnumSet` which should be used instead of these bit fields. it provides type safety and interoperability of sets and internally uses bit vector which makes its performance comparable with bit fields:
+```Java
+public class Text {
+    public enum Style { BOLD, ITALIC, UNDERLINE, STRIKETHROUGH }
+
+    public void applyStyles(Set<Style> styles) { ... }
+}
+```
+and then we can use it like this:
+```Java
+text.applyStyles(EnumSet.of(Style.BOLD, Style.ITALIC));
+```
+note that `applyStyles()` takes `Set` instead of `EnumSet`, this is a best practice to accept the interface type rather than the implementation type (*item 64*), but it works fine if we accept `EnumSet`.
