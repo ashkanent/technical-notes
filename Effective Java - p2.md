@@ -110,3 +110,27 @@ and then we can use it like this:
 text.applyStyles(EnumSet.of(Style.BOLD, Style.ITALIC));
 ```
 note that `applyStyles()` takes `Set` instead of `EnumSet`, this is a best practice to accept the interface type rather than the implementation type (*item 64*), but it works fine if we accept `EnumSet`.
+
+# Item 37
+- Use EnumMap instead of ordinal indexing
+- it is rarely appropriate to use oridnals to index into arrays, use `EnumMap` instead.
+  - if the relationship being represented is multidimensional, nested `EnumMap`s should be used:  
+  `EnumMap<..., EnumMap<...>>`
+- One example for using EnumMaps: consider this class representing a Plant:
+```Java
+public class Plant {
+    enum LifeCycle { ANNUAL, PERENNIAL, BIENNIAL }
+
+    final String name;
+    final LifeCycle lifeCycle;
+
+    // implement constructor and override toString to return name
+}
+```
+- so here basically each plant has a name and a life cycle. Now we want to have an array of plants representing a garden and we want to organize these plants by there life cycle. We can have an array of set (`Set<Plant>[]`) and use `LifeCycle` ordinal value to put each plant in one of the possible 3 sets or we can use `EnumMap`:
+```Java
+Map<Plant.LifeCycle, Set<Plant>> plantsByLifecycle = Arrays.stream(garden)
+                    .collect(gropuingBy(p -> p.lifeCycle,
+                        () -> new EnumMap<>(LifeCycle.class),
+                        toSet() ));
+```
