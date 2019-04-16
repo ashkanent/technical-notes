@@ -134,3 +134,52 @@ Map<Plant.LifeCycle, Set<Plant>> plantsByLifecycle = Arrays.stream(garden)
                         () -> new EnumMap<>(LifeCycle.class),
                         toSet() ));
 ```
+
+# Item 38
+- Emulate extensible enums with interfaces
+- enum types are better that alternative enum patterns (such as int enum patterns). There is however one limitation which is one enum type can not extend another (generally not a good idea!)
+- in some cases such as operation codes, it might be still valid to have extensible enums. To emulate the extension, we can use intefaces like this:
+
+```Java
+public interface Operation {
+    double apply(double x, double y);
+}
+
+public enum BasicOperation implements Operation {
+    PLUS("+") {
+        public double apply(double x, double y) { return x + y; }
+    },
+    MINUS("-") {
+        public double apply(double x, double y) { return x - y; }
+    };
+
+    private final String symbol;
+
+    BasicOperation(String symbol) {
+        this.symbol = symbol;
+    }
+
+    @Override
+    public String toString() { return symbol; }
+}
+
+public enum ExtendedOperation implements Operation {
+    EXP("^") {
+        public double apply(double x, double y) { return Math.pow(x, y); }
+    },
+    REMAINDER("%") {
+        public double apply(double x, double y) { return x % y; }
+    };
+
+    private final String symbol;
+
+    BasicOperation(String symbol) {
+        this.symbol = symbol;
+    }
+
+    @Override
+    public String toString() { return symbol; }
+}
+```
+- this pattern lets clients to write their own enums and we can have methods using these enums that rely on their standard methods, for example we can have a method that accepts enums extending `Operation` and we call `apply()` method on its enum constants, knowing they all implement it
+- The only issue here is that there are some duplicated code for `toString()`. we can potentially use static helper methods to reduce code duplication in these situations
