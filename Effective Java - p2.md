@@ -138,7 +138,7 @@ Map<Plant.LifeCycle, Set<Plant>> plantsByLifecycle = Arrays.stream(garden)
 # Item 38
 - Emulate extensible enums with interfaces
 - enum types are better that alternative enum patterns (such as int enum patterns). There is however one limitation which is one enum type can not extend another (generally not a good idea!)
-- in some cases such as operation codes, it might be still valid to have extensible enums. To emulate the extension, we can use intefaces like this:
+- in some cases such as operation codes, it might be still valid to have extensible enums. To emulate the extension, we can use interfaces like this:
 
 ```Java
 public interface Operation {
@@ -183,3 +183,85 @@ public enum ExtendedOperation implements Operation {
 ```
 - this pattern lets clients to write their own enums and we can have methods using these enums that rely on their standard methods, for example we can have a method that accepts enums extending `Operation` and we call `apply()` method on its enum constants, knowing they all implement it
 - The only issue here is that there are some duplicated code for `toString()`. we can potentially use static helper methods to reduce code duplication in these situations
+
+# Item 39
+- Prefer annotations to naming patterns
+- Annotations in java are used to provide supplement information about a program. They help us associate metadata (information) with the program elements.
+  - there are standard ones we can use (like `@SupressWarnings`, `@Override`, `@Deprecated`)
+  - we can also define our own annotations
+- One example of defining our test annotation for a test framework:  
+
+```Java
+import java.lang.annotation.*;
+
+@Retention(RententionPolicy.RUNTIME) // it will be retained at runtime
+@Target(ElementType.METHOD) // it can be used only on methods (not classes, etc.)
+public @interface Test {
+}
+```
+- now we can write tests like this:
+```Java
+public class Sample {
+    @Test
+    public static void testMethod() {}
+}
+```
+- now we can have a framework like this to find the annotated methods and run the tests:
+
+```Java
+public class TestRunner {
+    public static void main(String[] args) throws Exception {
+        int tests = 0;
+        int passed = 0;
+        Class<?> testClass = Class.forName(args[0]);
+        for (Method m : testClass.getDeclaredMethods()) {
+            if (m.isAnnotationPresent(Test.class)) {
+                tests++;
+                try {
+                    m.invoke(null);
+                    passed++;
+                } catch() {
+                    ... // see full implementation on page 182, 3rd edition
+                }
+            }
+        }
+    }
+}
+```
+- we can also define our test annotation to have some associated values (e.g. for exception):
+```Java
+@Retention(RententionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Test {
+    Class<? extends Throwable> value();
+}
+```
+- we can use it on a method like this:
+```Java
+@Test(ArithmeticException.class)
+public static void badMethod() {
+    int i = 3 / 0;
+}
+```
+and when calling it in our test runner, we can check its value like this:
+```Java
+method.getAnnotation(Test.class).value(); // here it should return ArithmeticException
+```
+- our custom annotations can contain more information:
+```Java
+@Documented
+@Retention(RententionPolicy.RUNTIME)
+public @interface User {
+    String name() default "Ashkan";
+    Long id();
+}
+```
+and then we can use it like this:
+```Java
+@User(name="Ashkan", id=123L)
+public AdminUser adminUser = new AdminUser();
+```
+
+**Note**
+- this item recommends using annotations
+- there used to be some naming conventions (like JUnit 3 was looking for methods defined in a certain way -start with test) but now they use annotations which is much better.
