@@ -265,3 +265,16 @@ public AdminUser adminUser = new AdminUser();
 **Note**
 - this item recommends using annotations
 - there used to be some naming conventions (like JUnit 3 was looking for methods defined in a certain way -start with test) but now they use annotations which is much better.
+
+# Item 40
+- Consistently use the `Override` annotation
+- the `@Override` annotation may be used on method declarations that override declarations from interfaces as well as classes
+  - with the advent of default methods, it is good practice to use `Override` on implementations of interface methods.
+- in an abstract class or an interface, it is worth annotating all methods that override superclass or interface methods, it provides extra checks and if by mistake you add a new method (e.g. by using a different method signature), it will warn you that what you are overriding does not exist in the parent
+
+# Item 41
+- Use marker interfaces to define types
+- a *marker interface* is an interface that contains no method declarations but merely designates/marks a class a class implementing it as having some property
+- if you find yourself writing a marker annotation type whose target is `ElementType.TYPE` (means any class or interface), make sure that you can't use a marker interface instead!
+  - if you wanna add methods that accept only objects that have this marking, you should use interfaces
+- this is basically inverse of *Item 22* (don't use an interface if you are not defining a type) and it says use an interface if you want to define a type
