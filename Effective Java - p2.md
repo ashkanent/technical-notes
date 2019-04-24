@@ -278,3 +278,49 @@ public AdminUser adminUser = new AdminUser();
 - if you find yourself writing a marker annotation type whose target is `ElementType.TYPE` (means any class or interface), make sure that you can't use a marker interface instead!
   - if you wanna add methods that accept only objects that have this marking, you should use interfaces
 - this is basically inverse of *Item 22* (don't use an interface if you are not defining a type) and it says use an interface if you want to define a type
+
+# Item 42
+- Prefer lambdas to anonymous classes
+- historically interfaces with single abstract methods were used as functional types. Their instances are known as *function objects* which represent functions or actions.
+- Since JDK 1.1 the primary means of creating these function objects was the *anonymous class* (refer to *Item 24*). Since Java 8 it is made possible to create these *functional interfaces* in a much more concise way using *lambda expressions*:
+
+```Java
+// using anonymous classes as a function object (obsolete!)
+Collections.sort(words, new Comparator<String>() {
+    public int compare(String s1, String s2) {
+        return Integer.compare(s1.length(), s2.length());
+    }
+});
+
+// now using lambda expression as function object (instead of anonymous class)
+Collections.sort(words, (s1, s2) -> Integer.compare(s1.length(), s2.length()));
+
+// even better using comparator construction method instead of lambda:
+Collections.sort(words, comparingInt(String::length));
+
+// even more succinct using sort method added to List interface in Java 8:
+words.sort(comparingInt(String::length));
+```
+- remember from *Item 34* in enum type `Operation` we used constant-specific class bodies and overrode `apply()` for each enum constant (since behavior was different for each constant). now instead of function objects we used in those examples of *Item 34* to override `apply()`, we can simply do this:
+```Java
+public enum Operation {
+    PLUS ("+", (x, y) -> x + y),
+    MINUS ("+", (x, y) -> x + y); // omitted other operations for brevity
+
+    private final static symbol;
+    private final static DoubleBinaryOperation op;
+
+    Operation(String symbol, DoubleBinaryOperation op) {
+        this.symbol = symbol;
+        this.op = op;
+    }
+
+    public double apply(double x, double y) {
+        return op.applyAsDouble(x, y);
+    }
+}
+```
+
+**Notes**
+- Lambdas lack names and documentation, one to three lines are reasonable for a lambda expression, don't put more than that in a lambda since they are not very self-explanatory and may result in confusion and harm the readability.
+- you should rarely (if ever) serialize a lambda.
