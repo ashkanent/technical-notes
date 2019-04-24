@@ -324,3 +324,26 @@ public enum Operation {
 **Notes**
 - Lambdas lack names and documentation, one to three lines are reasonable for a lambda expression, don't put more than that in a lambda since they are not very self-explanatory and may result in confusion and harm the readability.
 - you should rarely (if ever) serialize a lambda.
+
+
+# Item 43
+- Prefer method references to lambdas
+- the primary advantage of lambdas over anonymous classes is that they are more succinct
+- Java provides a way to generate function objects even more succinct: *method references*
+
+```Java
+// lambda expression
+map.merge(key, 1, (count, incr) -> count + incr);
+
+// method reference:
+map.merge(key, 1, Integer::sum);
+```
+- in the above example, lambda expression is a bit verbose and all it is saying is that the function returns the sum of its two arguments. we accomplish that by just using `Integer::sum`
+- in some situations lambda expression can be shorter that method reference (usually when the method is in the same class as the lambda). in these situations we better use the lambda version:
+```Java
+service.execute(GoshThisClassNameIsHumongous::action);
+// vs.
+service.execute(() -> action());
+```
+- there are other cases like `Function.identity()` which is again better to use the lambda equivalent `x -> x` as it is shorter and more clear.
+- so whenever it is shorter and more clear, we should use method references, o.w. we should use lambdas.
