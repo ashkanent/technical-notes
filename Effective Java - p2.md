@@ -191,14 +191,14 @@ public enum ExtendedOperation implements Operation {
   - we can also define our own annotations
 - One example of defining our test annotation for a test framework:  
 
-```Java
-import java.lang.annotation.*;
+    ```Java
+    import java.lang.annotation.*;
 
-@Retention(RententionPolicy.RUNTIME) // it will be retained at runtime
-@Target(ElementType.METHOD) // it can be used only on methods (not classes, etc.)
-public @interface Test {
-}
-```
+    @Retention(RententionPolicy.RUNTIME) // it will be retained at runtime
+    @Target(ElementType.METHOD) // it can be used only on methods (not classes, etc.)
+    public @interface Test {
+    }
+    ```
 - now we can write tests like this:
 ```Java
 public class Sample {
@@ -208,26 +208,26 @@ public class Sample {
 ```
 - now we can have a framework like this to find the annotated methods and run the tests:
 
-```Java
-public class TestRunner {
-    public static void main(String[] args) throws Exception {
-        int tests = 0;
-        int passed = 0;
-        Class<?> testClass = Class.forName(args[0]);
-        for (Method m : testClass.getDeclaredMethods()) {
-            if (m.isAnnotationPresent(Test.class)) {
-                tests++;
-                try {
-                    m.invoke(null);
-                    passed++;
-                } catch() {
-                    ... // see full implementation on page 182, 3rd edition
+    ```Java
+    public class TestRunner {
+        public static void main(String[] args) throws Exception {
+            int tests = 0;
+            int passed = 0;
+            Class<?> testClass = Class.forName(args[0]);
+            for (Method m : testClass.getDeclaredMethods()) {
+                if (m.isAnnotationPresent(Test.class)) {
+                    tests++;
+                    try {
+                        m.invoke(null);
+                        passed++;
+                    } catch() {
+                        ... // see full implementation on page 182, 3rd edition
+                    }
                 }
             }
         }
     }
-}
-```
+    ```
 - we can also define our test annotation to have some associated values (e.g. for exception):
 ```Java
 @Retention(RententionPolicy.RUNTIME)
@@ -284,23 +284,23 @@ public AdminUser adminUser = new AdminUser();
 - historically interfaces with single abstract methods were used as functional types. Their instances are known as *function objects* which represent functions or actions.
 - Since JDK 1.1 the primary means of creating these function objects was the *anonymous class* (refer to *Item 24*). Since Java 8 it is made possible to create these *functional interfaces* in a much more concise way using *lambda expressions*:
 
-```Java
-// using anonymous classes as a function object (obsolete!)
-Collections.sort(words, new Comparator<String>() {
-    public int compare(String s1, String s2) {
-        return Integer.compare(s1.length(), s2.length());
-    }
-});
+    ```Java
+    // using anonymous classes as a function object (obsolete!)
+    Collections.sort(words, new Comparator<String>() {
+        public int compare(String s1, String s2) {
+            return Integer.compare(s1.length(), s2.length());
+        }
+    });
 
-// now using lambda expression as function object (instead of anonymous class)
-Collections.sort(words, (s1, s2) -> Integer.compare(s1.length(), s2.length()));
+    // now using lambda expression as function object (instead of anonymous class)
+    Collections.sort(words, (s1, s2) -> Integer.compare(s1.length(), s2.length()));
 
-// even better using comparator construction method instead of lambda:
-Collections.sort(words, comparingInt(String::length));
+    // even better using comparator construction method instead of lambda:
+    Collections.sort(words, comparingInt(String::length));
 
-// even more succinct using sort method added to List interface in Java 8:
-words.sort(comparingInt(String::length));
-```
+    // even more succinct using sort method added to List interface in Java 8:
+    words.sort(comparingInt(String::length));
+    ```
 - remember from *Item 34* in enum type `Operation` we used constant-specific class bodies and overrode `apply()` for each enum constant (since behavior was different for each constant). now instead of function objects we used in those examples of *Item 34* to override `apply()`, we can simply do this:
 ```Java
 public enum Operation {
@@ -331,13 +331,13 @@ public enum Operation {
 - the primary advantage of lambdas over anonymous classes is that they are more succinct
 - Java provides a way to generate function objects even more succinct: *method references*
 
-```Java
-// lambda expression
-map.merge(key, 1, (count, incr) -> count + incr);
+    ```Java
+    // lambda expression
+    map.merge(key, 1, (count, incr) -> count + incr);
 
-// method reference:
-map.merge(key, 1, Integer::sum);
-```
+    // method reference:
+    map.merge(key, 1, Integer::sum);
+    ```
 - in the above example, lambda expression is a bit verbose and all it is saying is that the function returns the sum of its two arguments. we accomplish that by just using `Integer::sum`
 - in some situations lambda expression can be shorter that method reference (usually when the method is in the same class as the lambda). in these situations we better use the lambda version:
 ```Java
@@ -347,3 +347,33 @@ service.execute(() -> action());
 ```
 - there are other cases like `Function.identity()` which is again better to use the lambda equivalent `x -> x` as it is shorter and more clear.
 - so whenever it is shorter and more clear, we should use method references, o.w. we should use lambdas.
+
+# Item 44
+- Favor the use of standard functional interfaces
+- now that Java has lambdas, best practices of writing APIs has changed considerably
+- now instead of having a subclass overriding a primitive method in superclass, we can provide a static factory/constructor that accepts a function object
+- when you want to accept functional interfaces you don't have create the interface every time. First make sure it doesn't exist in `java.util.function` (unless you have a good reason not to use them)
+- there are 43 interfaces in this package but the main 6 are:
+```
+Interface               Function signature          Example
+--                      
+UnaryOperator<T>        T apply(T t)                String::toLowerCase
+BinaryOperator<T>       T apply(T t1, T t2)         BigInteger::add
+Predicate<T>            boolean test(T t)           Collection::isEmpty
+Function<T, R>          R apply(T t)                Arrays::asList
+Supplier<T>             T get()                     Instant::now
+Consumer<T>             void accept(T t)            System.out::println
+```
+- make sure you use these interfaces unless there are good reasons like
+  - it will be commonly used and can benefit from a more descriptive name
+  - it has a strong contract associated with it
+  - it would benefit from custom default methods
+- one example is Comparator<T> (where we don't use an existing interface)
+- when defining functional interfaces, use `@FunctionalInterface` annotation:
+```Java
+// for demonstration only, use the standard one under java.util.function:
+@FunctionalInterface
+interface EldestEntryRemovalFunction<K, V> {
+    boolean remove(Map<K, V> map, Map.Entry<K, V> eldest);
+}
+```
