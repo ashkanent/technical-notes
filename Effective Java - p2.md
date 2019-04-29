@@ -377,3 +377,54 @@ interface EldestEntryRemovalFunction<K, V> {
     boolean remove(Map<K, V> map, Map.Entry<K, V> eldest);
 }
 ```
+
+# Item 45
+- Use streams judiciously
+- Streams API was added in Java 8 and contains two key abstractions:
+  1. the stream, which represents finite/infinite sequence of data elements
+  2. the stream pipeline, which represents a multistage computation on these elements
+- streams are sufficiently versatile that practically any computation can be performed using streams.
+  - but this doesn't mean we should!
+  - when used appropriately, they make programs shorter and cleaner
+  - otherwise they make programs difficult to read and maintain
+- as an example look at one implementation of program that reads words and prints them based on *anagram* groups (words with same letters, different combinations):
+```Java
+public class Anagrams {
+    public static void main(String[] args) throws IOException {
+        Path dictionary = Paths.get(args[0]);
+        int minGroupSize = Integer.parseInt(args[1]);
+
+        try (Stream<String> words = Files.lines(dictionary)) {
+            words.collect(groupingBy(word -> alphabetize(word))).values()
+            .stream().filter(group -> group.size() >= minGroupSize)
+            .forEach(group -> System.out.println(group.size() + ": " + group));
+        }
+    }
+
+    private static String alphabetize(String str) {
+        char[] a = str.toCharArray();
+        Arrays.sort(a);
+        return new String(a);
+    }
+}
+```
+- things to consider in the above code:
+  - we could make everything iterative or we could use streams everywhere. But this is the best and most concise implementation that combines streams and imperative paradigms:
+    - we could implement `alphabetize()` using streams, but would've been less readable and less performant (streams are not efficient on chars as they don't support them)
+  - we also extracted `alphabetize()` as a method and used it in our stream. Alternatively it could have been implemented using streams and used in the same stream, but it would have made the entire thing more complex, less readable and less efficient
+  - we tried to use meaningful names in streams which clearly express the elements we are iterating on (e.g. `word` and `group`)
+- there are certain things we can't do from function objects (in streams) such as defining local variables and reading/modifying them in scope. Also we can't return from the enclosing method or break/continue or throw a checked exception:
+  - in these situations we should avoid streams.
+- also there are situations in which streams usually makes more sense:
+  - uniformly transform sequences of elements
+  - filter sequences of elements
+  - search sequence of elements for an element satisfying some criterion
+  - accumulate sequences of elements into a collection (perhaps grouping them by some common attributes)
+  - combine sequences of elements using a single operation
+- there are also some situations which it is not clear that which way is better or more efficient or more readable! in these situations we can go either way!
+
+
+**Notes**
+- Overusing streams makes programs hard to read and maintain
+- in the absence of explicit types, careful naming of lambda parameters is essential for readability of stream pipelines.
+- using helper methods is even more important for readability in stream pipelines than in iterative code!
