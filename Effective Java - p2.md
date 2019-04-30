@@ -428,3 +428,27 @@ public class Anagrams {
 - Overusing streams makes programs hard to read and maintain
 - in the absence of explicit types, careful naming of lambda parameters is essential for readability of stream pipelines.
 - using helper methods is even more important for readability in stream pipelines than in iterative code!
+
+# Item 46
+- Prefer side-effect-free functions in streams
+- Streams aren't just an api, they are a paradigm based on functional programming
+- they should have a sequence of transformations where the result of each stage is as close as possible to a *pure function*:
+  - its result depends only on its input, it doesn't depend on any mutable state, nor does it update any state
+- compare the following two examples, the first one doesn't follow the paradigm but the second one is modified to follow the paradigm:
+```Java
+// uses streams but not the paradigm:
+Map<String, Long> freq = new HashMap<>();
+try (Stream<String> words = new Scanner(file).tokens()) {
+    words.forEach(word -> {
+        freq.merge(word.toLowerCase(), 1L, Long::sum);
+    });
+}
+// proper use of streams:
+Map<String, Long> freq;
+try (Stream<String> words = new Scanner(file).tokens()) {
+    freq = words.collect(groupingBy(String::toLowerCase, counting()));
+}
+```
+the problem with the first example above is that we use forEach to mutate a an external state (frequency table). But second example is modified so that it accepts a table and initializes the given table
+- the forEach operation should be used only to report the result of a stream computation, not to perform the computation
+- In order to use streams properly, you have to know about collectors. The most important collector factories are `toList`, `toSet`, `toMap`, `groupingBy` and `joining`.
