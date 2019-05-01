@@ -452,3 +452,10 @@ try (Stream<String> words = new Scanner(file).tokens()) {
 the problem with the first example above is that we use forEach to mutate a an external state (frequency table). But second example is modified so that it accepts a table and initializes the given table
 - the forEach operation should be used only to report the result of a stream computation, not to perform the computation
 - In order to use streams properly, you have to know about collectors. The most important collector factories are `toList`, `toSet`, `toMap`, `groupingBy` and `joining`.
+
+# Item 47
+- Prefer collection to stream as a return type
+- when writing a public API that returns a sequence of elements, we should provide for both users who want to use it in a stream pipeline as well as those who want to iterate on them.
+- Best option here is to return a Collection that provides both
+- the only thing to notice here is that if a return type is small enough to be kept in memory, we can use standard collection implementations such as `ArrayList` or `HashSet`. If it is large, we should consider returning a custom collection
+  - one example is returning power set (all the sub-sets) of a given set: its space requirement is 2<sup>n</sup> space. Instead we can create a custom one based on binary representation of it (page 218 of the book for the implementation)
