@@ -459,3 +459,10 @@ the problem with the first example above is that we use forEach to mutate a an e
 - Best option here is to return a Collection that provides both
 - the only thing to notice here is that if a return type is small enough to be kept in memory, we can use standard collection implementations such as `ArrayList` or `HashSet`. If it is large, we should consider returning a custom collection
   - one example is returning power set (all the sub-sets) of a given set: its space requirement is 2<sup>n</sup> space. Instead we can create a custom one based on binary representation of it (page 218 of the book for the implementation)
+
+# Item 48
+- Use caution when making streams parallel
+- Java has always tried to facilitate concurrent programming. First version of Java was released with thread support, Java 5 introduced `java.util.concurrent` library with concurrent collections. Java 8 introduced streams which can be parallelized with a single call to the `parallel()` method
+- although it is very easy to call the parallel method we should be very careful as it won't be very helpful in most of the cases and in some cases it can result in failure or performance disaster
+- in general whenever we want to use it we have to have good reasons and we have to prove that the code remains correct. Then we have to measure the performance before and after to make sure it actually improved
+- performance gains from parallelism are best on streams over ArrayList, HashMap, ConcurrentHashMap, arrays, int ranges and long ranges.
