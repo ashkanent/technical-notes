@@ -466,3 +466,64 @@ the problem with the first example above is that we use forEach to mutate a an e
 - although it is very easy to call the parallel method we should be very careful as it won't be very helpful in most of the cases and in some cases it can result in failure or performance disaster
 - in general whenever we want to use it we have to have good reasons and we have to prove that the code remains correct. Then we have to measure the performance before and after to make sure it actually improved
 - performance gains from parallelism are best on streams over ArrayList, HashMap, ConcurrentHashMap, arrays, int ranges and long ranges.
+
+# Item 49
+- Check parameters for validity
+- most methods and constructors have some restrictions on their parameters. We should properly document these and also check for their validity as soon as we can.
+- for public or protected methods use the Javadoc @throws tag to document the exception
+- the `Objects.requireNonNull()` is convenient and easy to use (for null checks)
+
+# Item 50
+- Make defensive copies when needed
+- you must program defensively with the assumption that clients of your class will do their best to destroy it!
+- as an example of how things can go wrong and how we can prevent them, consider the following class:
+```Java
+public final class Period {
+    private final Date start;
+    private final Date end;
+
+    // 'start' must be before 'end'
+    public Period(Date start, Date end) {
+        if (start.compareTo(end) > 0) {
+            throw new IllegalArgumentException();
+        }
+        this.start = start;
+        this.end = end;
+    }
+
+    public Date start() {
+        return start;
+    }
+
+    public date end() {
+        return end;
+    }
+}
+```
+- first of all never use `Date` as it is mutable and instead use `java.time.Instant`. The following code can break the validity of our `Period` instance:
+```Java
+Date start = new Date();
+Date end = new Date();
+Period period = new Period();
+end.setYear(78); // modifies internals of period!
+```
+- to fix this, we should make defensive copies in constructor:
+```Java
+public Period(Date start, Date end) {
+    this.start = new Date(start.getTime());
+    this.end = new Date(end.getTime());
+
+    if (this.start.compareTo(this.end) > 0) {
+        throw new IllegalArgumentException();
+    }
+}
+```
+in the above code since we make a copy, it is impossible for the client to change the parameters. we also moved the validity check to after defining the defensive copies, this is to prevent scenarios like this: let's say another thread for example changes the value of parameters after we check their validity so by the time we assign them, they become invalid. but after we make our defensive copies, this can't happen and we can be sure that our Period instance is valid (and will remain valid)
+- there is one more thing we need to fix in this class to make it completely error prone. The getters we have defined will return the Date instances of the class and again their values can be altered out of the class (the variables are final but that's just the object reference, i.e. its value can change). We apply the same fix:
+```Java
+public Date start() {
+    return new Date(start.getTime());
+}
+// we do the same for end()
+```
+- same rules apply when you use a mutable object in your class and you know your class can't tolerate mutability in that reference (like you use the referenced object in a map as a key or in a set).
