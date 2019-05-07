@@ -527,3 +527,25 @@ public Date start() {
 // we do the same for end()
 ```
 - same rules apply when you use a mutable object in your class and you know your class can't tolerate mutability in that reference (like you use the referenced object in a map as a key or in a set).
+
+# Item 51
+- Design method signatures carefully
+- choose proper method names
+  - if there are naming conventions, obey them
+  - choose the best name that conveys the purpose of that method clearly
+  - ideally avoid very long method names
+- avoid long parameters list (maximum 4 parameters). There are different ways of making parameter lists shorter:
+  - breaking the method into multiple methods, each with fewer parameters list
+  - using helper classes/DTOs to pass around different parameters
+  - using Builder patter (*item 2*) from object construction to method invocation
+- for parameter types, favor interfaces over classes
+  - using classes will put unnecessary restrictions
+  - e.g. as an input instead of accepting `HashMap` we can accept `Map` (someone may want to pass a `TreeMap` or a `ConcurrentHashMap`)
+- prefer two element enum types to boolean parameters
+  - `public enum TemperatureScale { FAHRENHEIT, CELSIUS }`
+  - `Thermometer.newInstance(TemperatureScale.CELSIUS)` versus `Thermometer.newInstance(true)`
+  - we can also later expand the types under our enum type
+
+# Item 52
+- Use overloading judiciously
+- 
