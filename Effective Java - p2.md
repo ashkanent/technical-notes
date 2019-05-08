@@ -548,4 +548,18 @@ public Date start() {
 
 # Item 52
 - Use overloading judiciously
-- 
+- overloading is when two (or more) methods have the same name and different signatures. If not used carefully, it can get really confusing and generate unexpected results.
+- Choice of overloading (which overloaded method to be used) is determined at compile time and can cause issues:
+
+    ```Java
+    public String someMethod(Set<?> daSet) {
+        return  "Set!";
+    }
+
+    public String someMethod(Collection<?> daCollection) {
+        return "Collection";
+    }
+    ```
+    in an example like this, user may call `someMethod()` with a set and expecting it to call the first method, while it may call the second one!
+- it can get really confusing when there is same number of parameters. One alternative in these situations which makes it very clear and error prone is to use different names:
+  - like `readInt()`, `readBoolean()`, `readLong()` (instead of three overloaded `read()`s)
