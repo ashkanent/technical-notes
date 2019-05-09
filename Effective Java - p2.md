@@ -563,3 +563,50 @@ public Date start() {
     in an example like this, user may call `someMethod()` with a set and expecting it to call the first method, while it may call the second one!
 - it can get really confusing when there is same number of parameters. One alternative in these situations which makes it very clear and error prone is to use different names:
   - like `readInt()`, `readBoolean()`, `readLong()` (instead of three overloaded `read()`s)
+
+# Item 53
+- Use varargs judiciously
+- vararg methods accept zero or more arguments of a specified type
+  - they are life saver when we need variable number of arguments
+  ```Java
+  static int sum(int... args) {
+      int sum = 0;
+      for (int arg : args)
+          sum += arg;
+      return sum;
+  }
+  ```
+- couple of small notes about varargs and their usage:
+  1. if your method requires them to have at least one argument, we can check the argument size first thing and throw exception if it was zero:
+  ```Java
+  if (args.legth == 0) {
+      throw new IllegalArgumentException("too few arguments");
+  }
+  ```
+  but its messy and also more important, it fails at runtime (while it could've been caught at compile time). Best approach here is:
+  ```Java
+  static int min(int firstArg, int... remainingArgs) {
+      ...
+  }
+  ```
+  2. we need to be careful in performance-critical situations as each each use of varargs causes an array allocation and initialization. In this situation if we know that 90% of the cases are 2 arguments or less and we want to optimize the program, we can do this:
+  ```Java
+  public void foo() { }
+  public void foo(int a1) { }
+  public void foo(int a1, int a2) { }
+  public void foo(int a1, int a2, int... rest) { }
+  ```
+
+# Item 54
+- Return empty collections or arrays, not nulls
+- There is no reason to return null when the array or collection that we were supposed to return has no members. It makes code messy, on the client side we need to add extra unnecessary code to handle `null` case first and then if it was not null, process the returned values. If we forget, we may get `NPE`. It also adds extra unnecessary code on our side as well to see if there are no members return null, if not return the collection (while we should've just returned that collection, even if it is empty!)
+- in very rare cases we can argue that returning null is more memory efficient than allocating an empty array or collection. First it is inadvisable to worry about performance at this level and usually unnecessary. In the unlikely event that you have evidence suggesting that allocating empty collections is harming the performance, you can avoid it by returning `Collections.emptyList()`, `Collections.emptySet()`, `Collections.emptyMap()`, etc.
+  - in case of arrays, we can have an empty array and returning the same zero-length array repeatedly (zero length arrays are immutable):
+
+      ```Java
+      private static final Cheese[] EMPTY_CHEESE_ARRAY = new Cheese[0];
+
+      public Cheese[] getCheeses() {
+          return cheesesInStock.toArray(EMPTY_CHEESE_ARRAY); // if we want an empty array here
+      }
+      ```
