@@ -610,3 +610,50 @@ public Date start() {
           return cheesesInStock.toArray(EMPTY_CHEESE_ARRAY); // if we want an empty array here
       }
       ```
+
+# Item 55
+- Return optionals judiciously
+- Optionals represent values that can be either present or absent. Prior to Java 8, if a method was not able to return a value it could either throw an exception or return null. Optionals were added in Java 8 (`java.util.optional`), they are immutable containers that can contain either a non-null object reference or nothing at all (empty optional)
+```Java
+public static <E extends Comparable<E>> Optional<E> max(Collection<E> collection) {
+    if (collection.isEmpty()) {
+        return Optional.empty();
+    }
+
+    E result = //find the maximum element
+    return Optional.of(result);
+}
+```
+- passing `null` to `Optional.of(value)` will throw an exception.
+- many terminal operations on streams return optionals. Using stream in the above example will generate the optional for us:
+```Java
+public static <E extends Comparable<E>> Optional<E> max(Collection<E> collection) {
+    return collection.stream.max(Comparator.naturalOrder());
+}
+```
+- On the client side, they can decide what to do with an optional returned value. such as:
+
+    ```Java
+    // use a default value if optional is empty:
+    String myString = max(words).orElse("No words...");
+
+    // or throw an exception if it is empty:
+    Toy myToy = max(toys).orElseThrow(TemperTantrumException::new);
+
+    // if we know it's not empty we can just get the value:
+    Element lastNobleGas = max(Elements.NOBLE_GAS).get();
+    ```
+- if we have a stream of optionals and we want to get those elements of this stream that are not empty:
+```Java
+streamOfOptionals.filter(Optional::isPresent).map(Optional::get);
+```
+Java 9 added `stream()` method to `Optional` which returns only those elements that have value, so this last code snippet can be even shorter:
+```Java
+streamOfOptionals.flatMap(Optional::stream);
+```
+
+**Notes**
+- never return null from an optional-returning method
+- never return an optional of a boxed primitive type
+  - this is expensive compared to returning primitive type because the optional has two levels of boxing instead of zero
+  - you can use `OptionalInt`, `OptionalLong` and `OptionalDouble` if needed
