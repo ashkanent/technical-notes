@@ -657,3 +657,36 @@ streamOfOptionals.flatMap(Optional::stream);
 - never return an optional of a boxed primitive type
   - this is expensive compared to returning primitive type because the optional has two levels of boxing instead of zero
   - you can use `OptionalInt`, `OptionalLong` and `OptionalDouble` if needed
+
+# Item 56
+- Write doc comments for all exposed  API elements
+- to document the API properly, you must precede every exported class, interface, constructor, method and field declarations with a doc comment
+- The complete guide for writing java docs is [here](https://www.oracle.com/technetwork/articles/java/index-137868.html). This doc is a bit old (Java 4), since then, these tags have been added: `{@index}`, `{@implSpec}`, `{@literal}` and `{@code}`
+- the text following @param and @return should be a noun phrase, summary description should be a verb phrase. @throws should consist of the word "if" followed by the condition under which the exception is thrown:
+
+    ```Java
+    /**
+    * Returns the element at the specified position in this list.
+    *
+    * <p>This method is <i>not</i> guaranteed to run in constant time. In some
+    * implementations it may run in time proportional to the element position.
+    *
+    * @param index index of element to return; must be non-negative and less
+    *              than the size of this list
+    * @return the element at the specified position in this list
+    * @throws IndexOutOfBoundsException if the index is out of range
+    *         ({@code index < 0 || index >= this.size()})
+    */
+    E get(int index);
+    ```
+- there are some HTML meta-characters that should be skipped (such as `&` and `<`). also first sentence of each doc comment becomes *summary description* and this will be determined by a dot followed by space, so in this sentence we need to skip the second dot as well:
+```A college degree, such as B.S., M.S. or Ph.D.```  
+in these situations we can use @literal or @code tags to skip these characters and render them properly
+
+    ```Java
+    /**
+    * A college degree, such as B.S., {@literal M.S.} or Ph.D.
+    */
+    public class Degree {...}
+    ```
+- Doc comments should be readable both in the source code and in the generated documentation.
