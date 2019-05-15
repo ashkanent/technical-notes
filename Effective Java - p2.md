@@ -690,3 +690,22 @@ in these situations we can use @literal or @code tags to skip these characters a
     public class Degree {...}
     ```
 - Doc comments should be readable both in the source code and in the generated documentation.
+
+# Item 57
+- Minimize the scope of local variables
+- the most powerful technique is to declare them where they are first used
+- if local variable declaration doesn't contain initializer, perhaps we should postpone its declaration to when we have enough information to initialize it.
+- prefer for loops to while loops because they enforce local variables for iterators
+- keep methods small and focused
+  - having a method doing two things (let's say task 1 and task 2), we may define local variables that is used for task 1 but it's not used by task 2!
+  - to prevent this, simply separate this method into two
+
+# Item 58
+- Prefer for-each loops to traditional for loops
+- for different reasons such as being more succinct, less error prone and more flexibility we should use for-each loops when possible. Specially that they come with no performance penalty
+- we should be able to use for-each loops in different situations except when we need to access the iterator index for different scenarios such as removing or modifying an element at a certain index
+```Java
+for (Element element : elements) {
+    // do something
+}
+```
