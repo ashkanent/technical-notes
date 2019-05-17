@@ -709,3 +709,39 @@ for (Element element : elements) {
     // do something
 }
 ```
+
+# Item 59
+- Know and use the libraries
+- By using a standard library, you take advantage of the knowledge of the experts who wrote it and the experience of those who used it before you
+  - different functionalities in the libraries get developed and tested with all the edge cases and performance scenarios in mind, gets reviewed by the experts and then gets used by millions of developers. Discovered issues get fixed in future releases.
+- We should be familiar with standard libraries as well as high-quality 3rd party libraries such as Google's guava library
+
+# Item 60
+- avoid `float` and `double` if exact answers are required
+- these types are designed particularly for scientific and engineering calculations. They carefully provide accurate approximations quickly over a broad range of magnitudes.
+- they are specially ill-suited for monetary calculations
+```Java
+System.out.println(1.03 - 0.42); // 09999999999999998
+```
+- use `BigDecimal`, `int` (or `long`) in these situations
+
+# Item 61
+- prefer primitive types to boxed primitives
+- java has two-part type system:
+  1. primitives: such as int, double and boolean
+  2. reference types: such as String and List
+- every primitive type has a corresponding reference type called *boxed primitives*
+  - boxed primitives for `int`, `double` and `boolean` are `Integer`, `Double` & `Boolean`
+- primitives only have values but boxed primitives have identities distinct from their values. Primitives have only fully functional values whereas boxed primitives have non-functional value which is `null`. also primitives are more time and space efficient.
+- there are certain issues that we may encounter when using boxed primitives. for example:
+  - if we compare them like this: `integerOne == integerTwo` almost always returns false when their values are equal! (because it compares their identities rather than their values)
+  - when comparing `Integer` with `int`, it will automatically unbox the Integer to get its value and compare it with int. If Integer value is null, it will throw NPE!
+  ```Java
+  Integer i;
+  if (i == 52) { // NullPointerException
+      //...
+  }
+  ```
+  - there situations where we can't use primitives. Such as putting elements (or keys or values) in collections. For type parameters also we can't use primitives:
+    - `ThreadLocal<int>` is not allowed, you must use `ThreadLocal<Integer>`
+- in summary, we should always use primitives where ever we have the choice.
