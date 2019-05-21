@@ -745,3 +745,26 @@ System.out.println(1.03 - 0.42); // 09999999999999998
   - there situations where we can't use primitives. Such as putting elements (or keys or values) in collections. For type parameters also we can't use primitives:
     - `ThreadLocal<int>` is not allowed, you must use `ThreadLocal<Integer>`
 - in summary, we should always use primitives where ever we have the choice.
+
+# Item 62
+- Avoid Strings where other types are appropriate
+- Strings are designed to represent text, they do a fine job of it. at the same time, they are poor substitutes for other value types.
+  - poor substitutes for enum types (discussed in *Item 34*)
+  - poor substitutes for aggregate types ( strings like `'className#2#true'` that are meant to keep different values)
+- Used inappropriately, strings are more cumbersome, less flexible, slower and more error prone
+
+# Item 63
+- Beware the performance of string concatenation
+- using string concatenation operator on n strings requires time quadratic in `n`.
+  - this is because strings are immutable
+- don't use string concatenation to combine more than a few strings
+- for a better performance, use `StringBuilder` in place of string:
+```Java
+public String statement() {
+    StringBuilder stringBuilder = new StringBuilder(newItems() * LINE_WIDTH);
+    for (int i = 0; i < numItems(); i++) {
+        stringBuilder.append(lineForItem(i));
+    }
+    return stringBuilder.toString();
+}
+```
