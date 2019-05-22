@@ -768,3 +768,16 @@ public String statement() {
     return stringBuilder.toString();
 }
 ```
+
+# Item 64
+- Refer to objects by their interfaces
+
+    ```Java
+    // good
+    Set<Son> sonSet = new LinkedHashSet<>();
+
+    // bad
+    LinkedHashSet<Son> sonSet = new LinkedHashSet<>();
+    ```
+- If there is no appropriate interface, just use the least specific class that provides the required functionality
+- if we are using a class-base framework we can use the base class which is usually an abstract class
