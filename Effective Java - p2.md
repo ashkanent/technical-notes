@@ -781,3 +781,31 @@ public String statement() {
     ```
 - If there is no appropriate interface, just use the least specific class that provides the required functionality
 - if we are using a class-base framework we can use the base class which is usually an abstract class
+
+# Item 65
+- Prefer interfaces to reflection
+- Using reflection, given a class object you can access its constructor, fields and methods and invoke them. This comes handy when you don't know the class to use until run time.
+- when using reflection:
+  - you lose all the benefits of compile time type checking
+  - the code required for reflection is verbose (*see p. 283, 3rd edition for an example*)
+  - performance suffers
+- we should limit use of reflection as much as possible.
+- if possible we should create a class instance reflectively and then access the object using an interface or superclass that is known at compile time (to limit use of reflection)
+
+# Item 66
+- Use native methods judiciously
+- Java lets us call native methods written in native programming languages such as C/C++
+  - they allow access to low level resources and platform specific facilities such as registries
+  - they are also used to write performance-critical parts of applications
+- this item basically says that Java has changed a lot and added more features to make us independent of these native methods. it has also improved performance a lot.
+- we should rarely use native methods for improved performance
+- if we use them to access native libraries or low level resources, we should use as little native code as possible
+
+# Item 67
+- Optimize judiciously
+- this item says that we should avoid optimizing as much as possible! most of the effort is usually wasted and the results are usually negligible and sometimes worse!
+- instead we should focus on having a good architecture, which in nature is flexible, scalable and fast.
+- when you're done writing your application, use profiling tools to measure the performance
+  - if it's fast enough, you're good
+  - if not, locate source of problem, fix it and measure it afterwards to make sure you made improvements
+- no amount of low-level optimization can make up for a poor choose of algorithm
