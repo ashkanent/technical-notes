@@ -809,3 +809,30 @@ public String statement() {
   - if it's fast enough, you're good
   - if not, locate source of problem, fix it and measure it afterwards to make sure you made improvements
 - no amount of low-level optimization can make up for a poor choose of algorithm
+
+# Item 68
+- Adhere to generally accepted naming conventions
+- there are generally two categories of conventions: typographical and grammatical
+- **package** or **module**
+  - all lower case
+  - ideally less than 8 characters
+  - meaningful abbreviations are encouraged (util instead of utilities)
+  - start with organization's internet domain in reverse order
+  - `org.junit.jupiter.api`, `com.google.common`
+- **class** or **interface**
+  - CamelCase
+  - abbreviations are to be avoided except for common ones such as min and max
+  - `Stream`, `FutureTask`, `LinkedHashSet`, `HttpClient`
+- **method** or **field**
+  - camelCase
+  - except constants which are all caps, separated with under-score
+  - `remove`, `groupingBy`, `getCrc`, `MIN_VALUE`
+- local variables are lest restricted since they have a limited scope and no visibility in the api. you can use `i` or abbreviations such as `houseNum`
+  - personal note: I still prefer getting into the habit of more readable and meaningful names, specially given that all the modern editors have auto-complete (as mentioned in *Clean Code*)
+- type parameters are single letters, `E` for collection elements, `T` for an arbitrary type, `K` and `V` for key/value types in map, `R` for return types of methods and `X` for exception types. a sequence of arbitrary types are `T`, `U`, `V` or `T1`, `T2` and `T3`
+  - personal note: lots of developers prefer using full words to make it more clear and meaningful, such as `Type` instead of `T` or `DataType` instead of `E`, etc. (lots of articles about it online)
+- grammatical naming conventions are more flexible. none for package and module names. Class names (and enums) are usually singular noun (or noun phrases) such as `ChessPiece`, `Thread`,...
+- non-instantiable utility classes are usually plural noun such as `Collectors` or `Collections`
+- Interfaces are like classes (`Collection`) or end with `-ible`/`-able` like `Runnable` or `Accessible`
+- methods are verbs such as `append`, `drawImage`. if returning boolean, usually start with 'is' like `isDigit`, `isEmpty` or sometimes like `hasSiblings`
+  - methods returning non-boolean usually start with 'get' like `getTime` but sometimes it can be more readable to avoid get like `car.speed()`
