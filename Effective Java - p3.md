@@ -34,3 +34,23 @@ try {
     - there is a strong convention that errors are reserved for use by the JVM
     - such as `OutOfMemoryError`, `ThreadDeath`, etc.
     - all the unchecked exceptions you implement should subclass `RuntimeException`
+
+# Item 71
+- Avoid unnecessary use of checked exceptions
+- when used sparingly they increase reliability of programs, when overused, they make APIs painful to use
+- we need to use them when we believe user can recover the situation when getting the exception
+  - if they just log the stack trace or ignore it (as in like they can do nothing else) it doesn't make sense to make it a checked exception. This just makes it harder to use as you have to use a try/catch or propagate it outward!
+
+# Item 72
+- Favor the use of standard exceptions
+- Java libraries provide a set of exceptions that covers most of exception throwing needs of most APIs
+- we should try to use standard and appropriate exception types which makes our code cleaner and easier to read and understand
+- the most commonly reused exceptions are:
+  - `IllegalArgumentException`: non-null parameter value is inappropriate
+    - like passing a negative number to an argument expecting number of elements
+  - `IllegalStateException`: Object state is inappropriate for method invocation
+    - like Object is not initialized
+  - `NullPointerException`: parameter value is null where prohibited
+  - `IndexOutOfBoundException`: index parameter value is out of range
+  - `ConcurrentModificationException`: concurrent modification of object has been detected where it is prohibited
+  - `UnsupportedOperationException`: object does not support method
