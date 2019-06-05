@@ -54,3 +54,38 @@ try {
   - `IndexOutOfBoundException`: index parameter value is out of range
   - `ConcurrentModificationException`: concurrent modification of object has been detected where it is prohibited
   - `UnsupportedOperationException`: object does not support method
+
+# Item 73
+- Throw exceptions appropriate to the abstraction
+- when exceptions propagate outward, we may get one that has no apparent connection to the task that it performs.
+- to avoid this problem we can do *exception translation* which is basically catching the exception (when appropriate) and throwing a more relevant exception to the higher level instead
+- this is an example from `AbstractSequentialList`:
+```Java
+public E get(int index) {
+    ListIterator<E> i = listIterator(index);
+    try {
+        return i.next();
+    } catch (NoSuchElementException e) {
+        throw new IndexOutOfBoundsException("Index: " + index);
+    }
+}
+```
+- a special form of exception translation is called *exception chaining* which is when lower level exception might be useful to someone debugging the higher level exception. in this case, we pass the lower level exception to the higher level exception:
+```Java
+try {
+    ...
+} catch (LowerLevelException cause) {
+    throw new HigherLevelException(cause);
+}
+```
+  - most standard exceptions have chaining-aware constructors which pass the "cause" to a higher level constructor which can be accessed later.
+  - for exceptions, we can use `Throwable`'s `initCause` method which later can be accessed using `getCause`
+
+**Notes**
+- while exception translation is superior to mindless propagation of exceptions from lower layers, it should not be overused
+
+# Item 74
+- Document all exceptions thrown by each method
+- always declare checked exceptions individually and document precisely the conditions under which each one is thrown
+- use JavaDoc's `@throws` tag
+- it is also a good practice to document unchecked exceptions that the method can throw. These unchecked exceptions are usually programmer's error and doing this, they will know what to expect and how to properly use that method or interface.
