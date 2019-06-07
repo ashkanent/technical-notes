@@ -89,3 +89,40 @@ try {
 - always declare checked exceptions individually and document precisely the conditions under which each one is thrown
 - use JavaDoc's `@throws` tag
 - it is also a good practice to document unchecked exceptions that the method can throw. These unchecked exceptions are usually programmer's error and doing this, they will know what to expect and how to properly use that method or interface.
+
+# Item 75
+- Include failure-capture information in detail messages
+- to capture a failure, the detail message of an exception should contain all the values for all the parameters and fields that contributed to the exception
+  - e.g. if we get `IndexOutOfBoundException`, it would be very helpful to have the index value as well as the lower bound and upper bound
+  - an exception to this (for security purposes) is passwords, encryption keys and the like which we don't wanna include in the detail message
+
+# Item 76
+- Strive for failure atomicity
+- it means a failed method invocation should leave the object in the state that it was in prior to the invocation
+- there are different ways to achieve this goal. For example in stack implementation from before:
+```Java
+public Object pop() {
+    if (size == 0) {
+        throw new EmptyStackException();
+    }
+    Object result = elements[--size];
+    ...
+}
+```
+so here we check the size first and throw exception instead of making size `-1` and then wait for the exception to be thrown when accessing `elements[-1]`
+- another way to accomplish failure atomicity is to change the order of the computations if possible, so the part that may cause exception comes first.
+- Another approach is to perform operations on a copy of the object and then if everything was successful apply them back to the original
+- it should be mentioned that failure atomicity is not always achievable (like to threads without proper synchronization modify something) or sometimes making something atomic will hugely complicate the code. In these cases we should mention it in the API documentation that what is the broken state that may happen by a method invocation for example
+
+# Item 77
+- Don't ignore exceptions
+- an empty catch block defeats the purpose of exceptions. We should always take proper actions to address exceptions
+- in some rare cases it might be ok to ignore them, in which case we should put a comment in catch block with explanations:
+```Java
+int numColors = 4; // Default
+try {
+    numColors = getNumColors();
+} catch (ExecutionException | TimedoutException ignored) {
+    // in this case just use default value
+}
+```
