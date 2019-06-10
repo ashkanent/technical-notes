@@ -126,3 +126,43 @@ try {
     // in this case just use default value
 }
 ```
+
+# Item 78
+- Synchronize access to shared mutable data
+- it is better not to share mutable data between multiple threads and share only immutable data.
+- if we have a mutable object, we can share it with only one thread
+- if we have to share mutable data, we should use Synchronize which guarantees that no method will ever observe the object in an inconsistent state.
+  - the language specification guarantees that read/write is atomic unless variable is `long` or `double` (there is `AtomicLong` that we can use)
+- one example of using synchronization:
+```Java
+public class StopThread() {
+    private static boolean stopRequested;
+
+    private static synchronized void requestStop() {
+        stopRequested = true;
+    }
+
+    private static synchronized boolean stopRequested() {
+        return stopRequested;
+    }
+
+    public static void main(String[] args) {
+        Thread backgroundThread = new Thread(() -> {
+            int i = 0;
+            while ( !stopRequested() ) {
+                i++;
+            }
+        });
+        backgroundThread.start();
+
+        TimeUnit.SECONDS.sleep(1);
+        requestStop();
+    }
+}
+```
+- synchronization can be used for:
+  - 'communication': if we remove synchronization code above, our thread won't have access to updated value of `stopRequested`, so we should use it to make sure it does get the updated value as we expect it
+  - 'mutual exclusion': so we won't have race condition or having one thread reading value while the other is writing a new value to it.
+- in the above example, since synchronization is only used fo 'communication', we can remove the synchronized methods for read and write and instead declare the variable like this:
+`private static volatile boolean stopRequested;` this will make the thread check for the updated value everytime it reads it.
+- synchronization is not guaranteed unless both read/write methods are synchronized.
