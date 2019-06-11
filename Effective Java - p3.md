@@ -164,5 +164,28 @@ public class StopThread() {
   - 'communication': if we remove synchronization code above, our thread won't have access to updated value of `stopRequested`, so we should use it to make sure it does get the updated value as we expect it
   - 'mutual exclusion': so we won't have race condition or having one thread reading value while the other is writing a new value to it.
 - in the above example, since synchronization is only used fo 'communication', we can remove the synchronized methods for read and write and instead declare the variable like this:
-`private static volatile boolean stopRequested;` this will make the thread check for the updated value everytime it reads it.
+`private static volatile boolean stopRequested;` this will make the thread check for the updated value every time it reads it.
 - synchronization is not guaranteed unless both read/write methods are synchronized.
+
+# Item 79
+- Avoid excessive synchronization
+- inside a synchronized method or block, never cede control to the client
+  - like calling a method that is designed to be overridden
+  - or calling a method provided by the client
+  - from the perspective of the class with the synchronized region, these methods are called **alien**
+- we may get unwanted exceptions or deadlocks
+- as a rule, we should do as little work as possible inside synchronized regions
+- over-synchronization can have its own issues
+
+# Item 80
+- Prefer executors, tasks, and streams to threads
+- java.util.concurrent package contains *Executor Framework* which is a flexible interface-based task execution facility. Instead of creating a work queue to execute tasks asynchronously and handling that queue manually, it is better to use this framework:
+```Java
+ExecutorService exec = Executors.newSingleThreadExecutor();
+// submitting a runnable for execution:
+exec.execute(runnable);
+// terminating executor gracefully:
+exec.shutdown();
+```
+- you can do many more with this service. You can wait for all the tasks or a particular task to complete, you can retrieve results of tasks as they complete, you can schedule them to run at a particular time or to run periodically, and so on.
+- in essence, *Executor Framework* does for execution what *Collections Framework* did for aggregation.
