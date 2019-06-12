@@ -189,3 +189,20 @@ exec.shutdown();
 ```
 - you can do many more with this service. You can wait for all the tasks or a particular task to complete, you can retrieve results of tasks as they complete, you can schedule them to run at a particular time or to run periodically, and so on.
 - in essence, *Executor Framework* does for execution what *Collections Framework* did for aggregation.
+
+# Item 81
+- Prefer concurrency utilities to `wait` and `notify`
+- the higher level utilities in `java.util.concurrent` fall into three categories:
+  1. Executor Framework
+  2. concurrent collections
+  3. synchronizers
+- concurrent collections are high-performance concurrent implementation of standard collection interfaces such as List, Queue and Map (like `ConcurrentHashMap`)
+- *Synchronizers* are objects that enable threads to wait for one another, allowing them to coordinate their activities. the most common ones are `CountDownLatch` and `Semaphore` and the most powerful one is `Phaser`.
+- quick explanation of `CountDownLatch`: it has a constructor that gets an int which is number of times the `countDown` method must be invoked on it before all waiting threads can proceed:
+```Java
+CountDownLatch latch = new CountDownLatch(2);
+latch.await();
+System.out.println("done!");
+```
+so here if in another thread for example we invoke `latch.countDown` two times, the above code will proceed and print "done!"
+- in summary, this item (and the previous one) introduced us to three main utilities of `java.util.concurrent`. There are old alternatives for each of them that require lots of code and maintenance (for \#2 above, there are `Synchronized Collections` that are slower. For \#3 there is `wait` and `notify`/`notifyAll` which is messy and needs more handling). These last two items introduce these new alternatives and encourage us to use them instead. There are lots of details for each of them and if we need them, we should study them in more depth.
