@@ -206,3 +206,24 @@ System.out.println("done!");
 ```
 so here if in another thread for example we invoke `latch.countDown` two times, the above code will proceed and print "done!"
 - in summary, this item (and the previous one) introduced us to three main utilities of `java.util.concurrent`. There are old alternatives for each of them that require lots of code and maintenance (for \#2 above, there are `Synchronized Collections` that are slower. For \#3 there is `wait` and `notify`/`notifyAll` which is messy and needs more handling). These last two items introduce these new alternatives and encourage us to use them instead. There are lots of details for each of them and if we need them, we should study them in more depth.
+
+# Item 82
+- Document thread safety
+- How a class behaves when its methods are called concurrently is an important part of its API contract
+- to enable safe concurrent use, a class must clearly document its level of thread safety:
+  - **Immutable**: Instances are constant, no external synchronization is necessary
+  - **Unconditionally thread-safe**: instances of this class are mutable but the class has sufficient internal synchronization
+  - **Conditionally thread-safe**: like previous one but some of its methods need external synchronization
+  - **Not thread-safe**: to use them safely, client must surround each method invocation with external synchronization
+  - **Thread hostile**: unsafe for concurrent use even if everything is surrounded by synchronization. This usually results from modifying static data without internal synchronization, external synchronization won't help here!
+- lock fields should always be declared final:
+
+    ```Java
+    private final Object lock = new Object();
+
+    public void foo() {
+        synchronized(lock) {
+            ...
+        }
+    }
+    ```
