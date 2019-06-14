@@ -227,3 +227,45 @@ so here if in another thread for example we invoke `latch.countDown` two times, 
         }
     }
     ```
+
+# Item 83
+- Use lazy initialization judiciously
+- **Lazy initialization**: the act of delaying the initialization of a field until its value is needed
+- as is the case for most optimizations, don't do it unless you need to
+- if a field is only accessed on a fraction of the instances and it's costly to initialize it, it's better to lazily initialize it
+
+- normal lazy initialization which needs to be synchronized:
+```Java
+private FieldType field;
+private synchronized FieldType getField() {
+    if (field == null) {
+        field = computeFieldValue();
+    }
+    return field;
+}
+```
+- *lazy initialization holder class idiom*, to use on a static field:
+```Java
+private static class FieldHolder {
+    static final FieldType field = computeFieldValue(); // this will be ignored until accessor is called
+}
+private static FieldType getField() {
+    return FieldHolder.field;
+}
+```
+- to use lazy initialization for performance on an instance field, use the *double-check* idiom:
+
+    ```Java
+    private volatile FieldType field;
+
+    private FieldType getField() {
+        FieldType result = field;
+        if (result == null) { // first check, no locking
+            synchronized(this) {
+                if (field == null) { // second check with locking
+                    field = result = computeFieldValue();
+                }
+            }
+        }
+    }
+    ```
