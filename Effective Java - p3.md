@@ -269,3 +269,15 @@ private static FieldType getField() {
         }
     }
     ```
+
+# Item 84
+- Don't depend on the thread scheduler
+- when there are many runnable threads at the same time, thread scheduler determines which one gets to run for how long and this can be different in different systems. Any program that relies on thread scheduler for correctness and performance is likely to be nonportable.
+- threads should not run if they are not doing useful work (like waiting for something)
+- resist the temptation to use `Thread.yield` or thread priorities which are among least portable features of Java
+
+# Item 85
+- Prefer alternatives to Java serialization
+- There are many security risks in serialization. the best way to avoid serialization exploits is to never deserialize anything
+- there is no reason to use Java serialization in any new code you write
+- two good alternatives is to use JSON or protobuf as a cross platform structured data representation
