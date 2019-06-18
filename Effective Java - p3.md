@@ -281,3 +281,13 @@ private static FieldType getField() {
 - There are many security risks in serialization. the best way to avoid serialization exploits is to never deserialize anything
 - there is no reason to use Java serialization in any new code you write
 - two good alternatives is to use JSON or protobuf as a cross platform structured data representation
+
+# Item 86
+- Implement `Serializable` with a great caution
+- you can simply make any class to implement `Serializable` but there are a few things to be aware of
+  - it decreases class's flexibility to change once it has been released. basically the byte stream of its internals are now part of the exported API
+  - it increases the likelihood of bugs and security holes
+  - it increases the testing burden. It should be possible to serialize the old version of a class and deserialize it using its new version and vice versa. These should be all tested
+  - Classes designed for inheritance should rarely implement `Serializable` and interfaces should rarely extend it
+  - inner classes should not implement `Serializable`
+- when you make a serializable class, if you don't declare a static final long field called `serialVersionUID`, the system automatically generates it at runtime
