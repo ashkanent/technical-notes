@@ -291,3 +291,90 @@ private static FieldType getField() {
   - Classes designed for inheritance should rarely implement `Serializable` and interfaces should rarely extend it
   - inner classes should not implement `Serializable`
 - when you make a serializable class, if you don't declare a static final long field called `serialVersionUID`, the system automatically generates it at runtime
+
+# Item 87
+- Consider using a customer serialized form
+- Do not accept default serialized form without considering whether it is appropriate or not.
+- default serialization is an efficient encoding of the *physical* representation of the object graph
+- if this physical representation is identical to its logical content, then it is appropriate to use the default serialization. The following class is an example:
+```Java
+public class Name implements Serialization {
+    /**
+    * Last name, must be non-Null
+    * @serial
+    */
+    private final String lastName;
+
+    /**
+    * First name, must be non-Null
+    * @serial
+    */
+    private final String firstName;
+
+    /**
+    * Middle name, or null if there is none
+    * @serial
+    */
+    private final String middleName;
+}
+```
+- even if you decide that the default serialized form is appropriate, you often must provide a readObject method
+- On the other end of the spectrum, here is a terrible candidate for default serialization:
+```Java
+public final class StringList implements Serializable {
+    private int size = p;
+    private Entry head = null;
+
+    private static class Entry implements Serializable {
+        String data;
+        Entry next;
+        Entry previous;
+    }
+    //...
+}
+```
+logically speaking, this class represents a sequence of strings but physically it is a sequence of doubly linked list. A reasonable serialization form of this class is simply a number, representing number of strings in the list, followed by the strings themselves:
+```Java
+public final class StringList implements Serializable {
+    private transient int size = 0;
+    private transient Entry head = null;
+
+    private static class Entry {
+        String data;
+        Entry next;
+        Entry previous;
+    }
+
+    // appends the specified string to the list
+    public final void add(String s) {...}
+
+    /**
+    * Serialize this {@code StringList} instance
+    *
+    * @serialData The size of the list (the number of strings it contains) is
+    * emitted ({@code int}), followed by all of its elements (each a {@code String}
+    * ), in the proper sequence
+    */
+    private void writeObject(ObjectOutputStream s) throws IOException {
+        s.defaultWriteObject();
+        s.writeInt(size);
+
+        // write out all elements in the proper order
+        for (Entry e = head; e != null; e = e.next) {
+            s.writeObject(e.data);
+        }
+    }
+
+    private void readObject(ObjectInputStream s) throws IOException {
+        s.defaultReadObject();
+        int numElements = s.readInt();
+
+        // read in all elements and insert them in list
+        for (int i = 0; i < numElements; i++) {
+            add((String) s.readObject());
+        }
+    }
+
+    // remainder omitted
+}
+```
