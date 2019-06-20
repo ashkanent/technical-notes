@@ -378,3 +378,45 @@ public final class StringList implements Serializable {
     // remainder omitted
 }
 ```
+
+# Item 88
+- Write readObject methods defensively
+- default serialization and deserialization of classes can be overridden using `readObject` and `writeObject` methods.
+- these can be used for different scenarios, for example initializing transient (non-serializable) fields once we deserialized the object
+- another use case which is the topic of this item is protecting immutable classes when we deserialize them
+- as a reminder, for classes that have modifiable objects, we make them immutable by making them private final and also defensively copying them everywhere:
+```Java
+public final class Period {
+    private final Date start;
+    private final Date end;
+
+    public Period(Date start, Date end) {
+        this.start = new Date(start.getTime());
+        this.end = new Date(end.getTime());
+        if (this.start.compareTo(this.end) > 0) {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    // getters and no setters
+}
+```
+other than defensive copying, we check for validations as well to make sure state is valid.
+- This item explains that `readObject` is effectively another public constructor which demands all of the same care as any other constructor
+  - there are a few examples in the book that modifies the serialized byte stream to break things that are normally not possible on the above `Period` class. (examples are for when we make `Period` to implement Serializable and we don't provide a proper `readObject`)
+  - in short, the proper `readObject` should defensively copy the fields and check for the validations
+  - here is a proper implementation of it:
+  ```Java
+  private void readObject(ObjectInputStream is) throws IOException, ClassNotFoundException {
+      is.defaultReadObject();
+
+      start = new Date(start.getTime());
+      end = new Date(end.getTime());
+
+      if (start.compareTo(end) > 0) {
+          throw new InvalidObjectException();
+      }
+  }
+  ```
+  note that here we have to make the fields non-final to be able to make a defensive copy right after deserialization.
+- same as immutable classes, these `readObject` methods should not invoke overridable methods
