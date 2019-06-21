@@ -420,3 +420,35 @@ other than defensive copying, we check for validations as well to make sure stat
   ```
   note that here we have to make the fields non-final to be able to make a defensive copy right after deserialization.
 - same as immutable classes, these `readObject` methods should not invoke overridable methods
+
+# Item 89
+- For instance control, prefer enum types to readResolve
+- another risk with using serialization is singleton classes. They look like this:
+```Java
+public class Elvis {
+    public static final Elvis INSTANCE = new Elvis();
+    private Elvis() {...}
+}
+```
+if we make it to implement serializable, it no longer will be a singleton.
+- As a fix we can use `readResolve` method. This method takes object after deserialization and the object returned by this method is the final deserialized object (so we can replace the serialized object or modify it however we want before it gets to the client). The fix using `readResolve` will look something like this:
+```Java
+private Object readResolve() {
+    // return the only instance of Elvis and garbage collector will take care of
+    // the deserialized Elvis impersonator which will be ignored here:
+    return INSTANCE;
+}
+```
+- if we depend on `readResolve` for instance control, all instance fields with object reference types must be declared transient, if not there can be a potential for an attack.
+- We can prevent this attack with a more preferred approach which is using enum:
+```Java
+public enum Elvis {
+    INSTANCE;
+
+    private String[] favoriteSongs = {"a", "b"};
+
+    public void printFavourites() {
+        System.out.println(Arrays.toString(favoriteSongs));
+    }
+}
+```
