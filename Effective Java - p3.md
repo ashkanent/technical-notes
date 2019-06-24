@@ -452,3 +452,43 @@ public enum Elvis {
     }
 }
 ```
+# Item 90
+- Consider serialization proxies instead of serialized instances
+- consider this pattern whenever you find yourself having to write readObject or writeObject on a class that is not extendable by its clients
+- as mentioned in previous items, using serialization increases the likelihood of bugs and security problems. *Serialization Proxy Pattern* greatly reduces these risks
+- first, design a private static nested class that concisely represents the logical state of an instance of the enclosing class (this nested class is *serialization proxy* of the enclosing class)
+- this class should have one constructor whose parameter type is enclosing class.
+- both enclosing class and serialization proxy must declare `Serialization`
+- this is a serialization proxy for the `Period` class written in item 50:
+```Java
+private static class SerializationProxy implements Serializable {
+    private final Date start;
+    private final Date end;
+
+    SerializationProxy(Period period) {
+        this.start = period.start;
+        this.end = period.end;
+    }
+
+    private static final long serialVersionUID = 23413487423847742L; // any number will do
+}
+```
+- now we have to add the `writeReplace` method to the enclosing class:
+```Java
+private Object writeReplace() {
+    return new SerializationProxy(this);
+}
+```
+- with this pattern, we should not generate a serialized version of the enclosing class, to safe gaurd it against attackers, add this to the enclosing class:
+```Java
+private void readObject(ObjectInputStream stream) throws InvalidObjectException {
+    throw new InvalidObjectException("Proxy required!");
+}
+```
+- finally, provide `readResolve` method on the serialization proxy class that returns a logically equivalent instance of the enclosing class:
+```Java
+private Object readResolve() {
+    return new Period(start, end);
+}
+```
+- the key here is that at the end, this pattern uses the public constructor in the `readResolve` method which makes it safe (normally serialization uses extralinguistic mechanism in place of ordinary constructors)
