@@ -73,7 +73,7 @@ service.execute(() -> action());
 - Favor the use of standard functional interfaces
 - now that Java has lambdas, best practices of writing APIs has changed considerably
 - now instead of having a subclass overriding a primitive method in superclass, we can provide a static factory/constructor that accepts a function object
-- when you want to accept functional interfaces you don't have create the interface every time. First make sure it doesn't exist in `java.util.function` (unless you have a good reason not to use them)
+- when you want to accept functional interfaces you don't have to create the interface every time. First make sure it doesn't exist in `java.util.function` (unless you have a good reason not to use them)
 - there are 43 interfaces in this package but the main 6 are:
 ```
 Interface               Function signature          Example
