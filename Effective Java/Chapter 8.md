@@ -37,7 +37,7 @@ public final class Period {
 ```Java
 Date start = new Date();
 Date end = new Date();
-Period period = new Period();
+Period period = new Period(start, end);
 end.setYear(78); // modifies internals of period!
 ```
 - to fix this, we should make defensive copies in constructor:
